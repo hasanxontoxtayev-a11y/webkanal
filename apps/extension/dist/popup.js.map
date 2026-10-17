@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../src/popup.ts"],
-  "sourcesContent": ["/**\n * TubePilot AI \u2014 Extension Toolbar Popup Logic\n */\n\ndeclare const chrome: any;\n\ndocument.addEventListener('DOMContentLoaded', () => {\n  const auditBtn = document.getElementById('btn-audit');\n  const inputEl = document.getElementById('channel-input') as HTMLInputElement | null;\n\n  if (auditBtn && inputEl) {\n    auditBtn.addEventListener('click', () => {\n      const handle = inputEl.value.trim();\n      const targetUrl = handle\n        ? `http://localhost:3001/uz/dashboard?audit_handle=${encodeURIComponent(handle)}`\n        : `http://localhost:3001/uz/dashboard`;\n      \n      chrome.tabs.create({ url: targetUrl });\n    });\n\n    inputEl.addEventListener('keydown', (e) => {\n      if (e.key === 'Enter') {\n        auditBtn.click();\n      }\n    });\n  }\n});\n"],
-  "mappings": ";;AAMA,WAAS,iBAAiB,oBAAoB,MAAM;AAClD,UAAM,WAAW,SAAS,eAAe,WAAW;AACpD,UAAM,UAAU,SAAS,eAAe,eAAe;AAEvD,QAAI,YAAY,SAAS;AACvB,eAAS,iBAAiB,SAAS,MAAM;AACvC,cAAM,SAAS,QAAQ,MAAM,KAAK;AAClC,cAAM,YAAY,SACd,mDAAmD,mBAAmB,MAAM,CAAC,KAC7E;AAEJ,eAAO,KAAK,OAAO,EAAE,KAAK,UAAU,CAAC;AAAA,MACvC,CAAC;AAED,cAAQ,iBAAiB,WAAW,CAAC,MAAM;AACzC,YAAI,EAAE,QAAQ,SAAS;AACrB,mBAAS,MAAM;AAAA,QACjB;AAAA,MACF,CAAC;AAAA,IACH;AAAA,EACF,CAAC;",
-  "names": []
-}

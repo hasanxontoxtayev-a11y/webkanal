@@ -6,17 +6,26 @@ node_modules
 # Testing & Coverage
 coverage
 
-# Next.js Build Artifacts
+# Next.js & Extension Build Artifacts
 .next/
 out/
 build/
 dist/
+apps/*/dist/
 
 # Turborepo
 .turbo/
 
-# Environment Variables
+# Environment Variables (Secrets)
+.env
+.env.local
 .env*.local
+*.env
+
+# SQLite / Local Databases
+*.db
+*.db-journal
+*.sqlite
 
 # Debug / Logs
 npm-debug.log*

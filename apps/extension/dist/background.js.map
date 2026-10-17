@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../src/background.ts"],
-  "sourcesContent": ["/**\n * TubePilot AI \u2014 Chrome Extension Service Worker\n */\n\ndeclare const chrome: any;\n\nchrome.runtime.onInstalled.addListener(() => {\n  console.log('[TubePilot AI] Universal YouTube HUD Extension Installed Successfully');\n});\n\n// Message listener for proxying or notification events\nchrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {\n  if (message.type === 'PING') {\n    sendResponse({ status: 'PONG', timestamp: Date.now() });\n  }\n  return true;\n});\n"],
-  "mappings": ";;AAMA,SAAO,QAAQ,YAAY,YAAY,MAAM;AAC3C,YAAQ,IAAI,uEAAuE;AAAA,EACrF,CAAC;AAGD,SAAO,QAAQ,UAAU,YAAY,CAAC,SAAS,SAAS,iBAAiB;AACvE,QAAI,QAAQ,SAAS,QAAQ;AAC3B,mBAAa,EAAE,QAAQ,QAAQ,WAAW,KAAK,IAAI,EAAE,CAAC;AAAA,IACxD;AACA,WAAO;AAAA,EACT,CAAC;",
-  "names": []
-}

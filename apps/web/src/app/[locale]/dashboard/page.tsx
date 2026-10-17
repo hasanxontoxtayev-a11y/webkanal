@@ -13,8 +13,8 @@ import { PostingHeatmap } from '@/components/PostingHeatmap';
 import { CommentInbox } from '@/components/CommentInbox';
 import { ThumbnailStudio } from '@/components/ThumbnailStudio';
 import { ChannelAudit } from '@/components/ChannelAudit';
+import { YoutubeIcon as Youtube } from '@/components/YoutubeIcon';
 import {
-  Youtube,
   Users,
   Eye,
   HelpCircle,

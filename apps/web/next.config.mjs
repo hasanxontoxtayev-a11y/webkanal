@@ -12,9 +12,6 @@ const nextConfig = {
   transpilePackages: ['@kanal/db', '@kanal/ai', '@kanal/youtube', '@kanal/queue'],
   outputFileTracingRoot: path.resolve(__dirname, '../../'),
   serverExternalPackages: ['@prisma/client', 'prisma'],
-  experimental: {
-    serverComponentsExternalPackages: ['@prisma/client', 'prisma'],
-  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'i.ytimg.com' },

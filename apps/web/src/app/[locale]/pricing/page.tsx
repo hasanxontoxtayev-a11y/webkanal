@@ -16,12 +16,12 @@ import {
   ArrowLeft,
   Loader2,
   CheckCircle2,
-  Youtube,
   BarChart3,
   Bot,
   Flame,
   HelpCircle,
 } from 'lucide-react';
+import { YoutubeIcon as Youtube } from '@/components/YoutubeIcon';
 
 export default function PricingPage() {
   const params = useParams();

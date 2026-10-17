@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import {
-  Youtube,
   CheckCircle2,
   X,
   Loader2,
   Unlink,
   ShieldCheck,
 } from 'lucide-react';
+import { YoutubeIcon as Youtube } from '@/components/YoutubeIcon';
 
 interface ConnectChannelModalProps {
   isOpen: boolean;

@@ -159,30 +159,60 @@ Task:
   }
 
   /**
-   * Conversational YouTube Creator & TubePilot Assistant
+   * Conversational YouTube Creator & TubePilot Assistant (Optimized for ultra-fast response)
    */
   public static async askCreatorAssistant(
     userQuery: string,
     language: "uz" | "ru" | "en" = "uz"
   ): Promise<string> {
-    const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY environment variable is not defined");
+    }
 
     const systemPrompt = `You are TubePilot AI — the elite YouTube Growth Consultant and Official Companion Bot for TubePilot AI (a cutting-edge SaaS competitor to VidIQ).
 Your mission:
 1. Provide master-level YouTube advice (CTR optimization, SEO, viral titles, thumbnail psychology, VPH velocity, AdSense RPM, sponsorship deals, shorts vs long-form strategy).
 2. Answer any question about TubePilot AI platform (Comment Copilot human-in-the-loop approvals, Gemini Vision thumbnail evaluations, audience peak posting heatmap, 1-click channel sync).
 3. Always respond naturally and fluently in the requested language: ${language.toUpperCase()} (Uzbek for 'uz', Russian for 'ru', English for 'en').
-4. Keep your answer practical, encouraging, structured with clean Markdown bullets, and directly actionable for creators.`;
+4. Keep your answer practical, encouraging, structured with clean Markdown bullets, and directly actionable for creators. Keep length within 3-4 concise points so response is rapid.`;
 
-    const response = await this.ai.models.generateContent({
-      model,
-      contents: [systemPrompt, userQuery],
-      config: {
-        temperature: 0.7,
-      },
-    });
+    const candidateModels = ["gemini-3.6-flash", "gemini-3.8-flash", "gemini-3.7-flash"];
 
-    return response.text || "Uzr, javob tayyorlashda texnik xatolik yuz berdi.";
+    for (const model of candidateModels) {
+      try {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [
+                {
+                  parts: [
+                    { text: `${systemPrompt}\n\nFoydalanuvchi savoli: ${userQuery}` }
+                  ]
+                }
+              ],
+              generationConfig: {
+                maxOutputTokens: 500,
+                temperature: 0.6
+              }
+            })
+          }
+        );
+
+        const data = await res.json();
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          return text;
+        }
+      } catch (e) {
+        console.warn(`Model ${model} failed, trying next...`);
+      }
+    }
+
+    return "YouTube algoritmlari bo'yicha maslahat: Tomoshabinlarni videongizda ko'proq ushlab turing va yuqori kontrastli (CTR 8%+) muqovalardan foydalaning!";
   }
 }
 

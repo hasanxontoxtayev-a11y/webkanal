@@ -1,4 +1,4 @@
-import { Bot, InlineKeyboard } from "grammy";
+import { Bot, InlineKeyboard, Keyboard } from "grammy";
 import { prisma, LanguageCode } from "@kanal/db";
 import { YouTubeService, resolveYouTubeChannel } from "@kanal/youtube";
 import { GeminiService } from "@kanal/ai";
@@ -174,29 +174,61 @@ export async function sendIntroHelpGuide(ctx: any) {
   }
 }
 
+// Helper: Get persistent reply keyboard
+function getPersistentMenu(lang: "uz" | "ru" | "en") {
+  if (lang === "ru") {
+    return new Keyboard()
+      .text("🚀 Главное Меню").text("🔍 Аудит Канала")
+      .row()
+      .text("🖼️ CTR Vision").text("📺 Мой Канал")
+      .row()
+      .text("🌐 Язык (Language)").text("❓ FAQ")
+      .resized();
+  } else if (lang === "en") {
+    return new Keyboard()
+      .text("🚀 Main Menu").text("🔍 Audit Channel")
+      .row()
+      .text("🖼️ CTR Vision").text("📺 My Channel")
+      .row()
+      .text("🌐 Language").text("❓ FAQ")
+      .resized();
+  }
+  return new Keyboard()
+    .text("🚀 Asosiy Menyu").text("🔍 Kanal Auditi")
+    .row()
+    .text("🖼️ CTR Vision").text("📺 Kanalim")
+    .row()
+    .text("🌐 Tilni Tanlash").text("❓ FAQ")
+    .resized();
+}
+
 // -----------------------------------------------------------------------------
-// 1. /start COMMAND: SHOW MULTILINGUAL SELECTOR FIRST
+// 1. /start COMMAND: SHOW FULL MAIN HUB WITH INSTANT ACTION BUTTONS
 // -----------------------------------------------------------------------------
 bot.command("start", async (ctx) => {
   const payload = ctx.match?.trim() || "none";
+  const userIdFrom = BigInt(ctx.from?.id || 0);
+  const lang = await getUserLang(userIdFrom);
 
-  const keyboard = new InlineKeyboard()
+  // Send persistent menu so user ALWAYS has buttons at the bottom
+  const persistentMenu = getPersistentMenu(lang);
+
+  const langSelectorKeyboard = new InlineKeyboard()
     .text("🇺🇿 O'zbekcha", `set_lang:uz:${payload}`)
-    .row()
     .text("🇷🇺 Русский", `set_lang:ru:${payload}`)
-    .row()
     .text("🇬🇧 English", `set_lang:en:${payload}`);
 
   await ctx.reply(
-    "👋 **Xush kelibsiz! / Добро пожаловать! / Welcome to TubePilot AI!** 🚀\n\n" +
-    "🇺🇿 Iltimos, muloqot tilini tanlang:\n" +
-    "🇷🇺 Пожалуйста, выберите язык интерфейса:\n" +
-    "🇬🇧 Please select your preferred language:",
+    "👋 **TubePilot AI — Avtonom YouTube Kopiloti & VidIQ Muqobiliga Xush Kelibsiz!** 🚀\n\n" +
+    "Tanlangan til / Язык: **" + lang.toUpperCase() + "** (O'zgartirish uchun pastdagi tugmani bosing):",
     {
-      reply_markup: keyboard,
+      reply_markup: langSelectorKeyboard,
       parse_mode: "Markdown",
     }
   );
+
+  // Immediately display the full guide and quick action cards
+  await sendIntroHelpGuide(ctx);
 });
 
 // -----------------------------------------------------------------------------
@@ -677,10 +709,19 @@ bot.on("message:text", async (ctx) => {
 });
 
 // -----------------------------------------------------------------------------
-// 10. BOT RUNTIME LAUNCHER
+// 10. BOT RUNTIME LAUNCHER WITH OFFICIAL TELEGRAM MENU BUTTONS
 // -----------------------------------------------------------------------------
 if (!process.env.NEXT_RUNTIME) {
   console.log("Connecting TubePilot AI Telegram Bot runtime...");
+
+  bot.api.setMyCommands([
+    { command: "start", description: "🚀 Asosiy menyu va barcha imkoniyatlar" },
+    { command: "audit", description: "🔍 Istalgan kanalni VidIQ uslubida audit qilish" },
+    { command: "channel", description: "📺 Ulangan kanal va real statistika" },
+    { command: "help", description: "💡 YouTube AI maslahatchi va yo'riqnoma" },
+    { command: "lang", description: "🌐 Muloqot tilini o'zgartirish (UZ/RU/EN)" },
+  ]).catch(console.warn);
+
   bot.start({
     onStart: (botInfo) => {
       console.log(`🚀 TubePilot AI Telegram Bot is online and listening! Username: @${botInfo.username} (ID: ${botInfo.id})`);

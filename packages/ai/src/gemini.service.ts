@@ -28,7 +28,7 @@ export class GeminiService {
     imageBuffer: Buffer,
     mimeType: string = "image/jpeg"
   ): Promise<ThumbnailEvaluationResult> {
-    const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+    const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 
     const prompt = `You are an elite YouTube Growth Consultant and Thumbnail Designer for top-tier creators.
 Analyze this video thumbnail cover with deep visual scrutiny:
@@ -157,4 +157,32 @@ Task:
 
     return JSON.parse(response.text) as CommentDraftResult;
   }
+
+  /**
+   * Conversational YouTube Creator & TubePilot Assistant
+   */
+  public static async askCreatorAssistant(
+    userQuery: string,
+    language: "uz" | "ru" | "en" = "uz"
+  ): Promise<string> {
+    const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+
+    const systemPrompt = `You are TubePilot AI — the elite YouTube Growth Consultant and Official Companion Bot for TubePilot AI (a cutting-edge SaaS competitor to VidIQ).
+Your mission:
+1. Provide master-level YouTube advice (CTR optimization, SEO, viral titles, thumbnail psychology, VPH velocity, AdSense RPM, sponsorship deals, shorts vs long-form strategy).
+2. Answer any question about TubePilot AI platform (Comment Copilot human-in-the-loop approvals, Gemini Vision thumbnail evaluations, audience peak posting heatmap, 1-click channel sync).
+3. Always respond naturally and fluently in the requested language: ${language.toUpperCase()} (Uzbek for 'uz', Russian for 'ru', English for 'en').
+4. Keep your answer practical, encouraging, structured with clean Markdown bullets, and directly actionable for creators.`;
+
+    const response = await this.ai.models.generateContent({
+      model,
+      contents: [systemPrompt, userQuery],
+      config: {
+        temperature: 0.7,
+      },
+    });
+
+    return response.text || "Uzr, javob tayyorlashda texnik xatolik yuz berdi.";
+  }
 }
+

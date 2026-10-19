@@ -1,6 +1,7 @@
 import { Bot, InlineKeyboard } from "grammy";
 import { prisma, LanguageCode } from "@kanal/db";
 import { YouTubeService, resolveYouTubeChannel } from "@kanal/youtube";
+import { GeminiService } from "@kanal/ai";
 
 const token = process.env.TELEGRAM_BOT_TOKEN || "8793624781:AAH50ARJWxJKAS2NTWaeC9ijPaiipTY73P4";
 export const bot = new Bot(token);
@@ -564,32 +565,115 @@ bot.on("message:text", async (ctx) => {
   const text = ctx.message.text.trim();
   if (text.startsWith("/")) return;
 
-  // If text starts with @ or is a YouTube URL, audit that channel
-  if (text.startsWith("@") || text.includes("youtube.com/") || text.includes("youtu.be/")) {
-    await ctx.reply(`🔍 *"${text}" bo'yicha kanal tahlili boshlanmoqda...*`, { parse_mode: "Markdown" });
+  const userIdFrom = BigInt(ctx.from?.id || 0);
+  const lang = await getUserLang(userIdFrom);
+
+  // 1. Check if user typed a channel handle, channel name, or YouTube URL:
+  // e.g. "kunuz", "@kunuz_official", "subyektiv", "mrbeast", "https://youtube.com/@..."
+  const isDirectAuditCandidate =
+    text.startsWith("@") ||
+    text.includes("youtube.com/") ||
+    text.includes("youtu.be/") ||
+    /^[a-zA-Z0-9_\-\.]{3,30}$/.test(text);
+
+  if (isDirectAuditCandidate) {
+    const searchingMsg =
+      lang === "ru"
+        ? `🔍 *Анализ канала "${text}" (CTR, VPH, RPM)...*`
+        : lang === "en"
+        ? `🔍 *Analyzing channel "${text}" (CTR, VPH, RPM)...*`
+        : `🔍 *"${text}" kanali tahlil qilinmoqda (CTR, VPH, RPM)...*`;
+
+    await ctx.reply(searchingMsg, { parse_mode: "Markdown" });
+
     try {
       const data = await resolveYouTubeChannel(text);
-      const dashboardUrl = `${getDashboardUrl()}/uz/dashboard#channel-audit`;
-      await ctx.reply(
-        `🔍 **TubePilot AI Audit: ${data.channelTitle} (${data.channelHandle})**\n\n` +
-        `🏆 **Baho:** Grade ${data.grade} (${data.overallScore}/100)\n` +
-        `👥 **Obunachilar:** ${data.subscribers} | 👁️ **Ko'rishlar:** ${data.totalViews}\n` +
-        `⚡ **VPH Tezligi:** ${data.vph.currentVph} (Eng yuqori: ${data.vph.peakVph})\n` +
-        `💰 **Taxminiy AdSense:** ${data.monetization.breakdown?.monthlyAdsense || data.monetization.projectedMonthlyMin} / oy\n` +
-        `🤝 **Homiylik salohiyati:** ${data.monetization.breakdown?.sponsorshipPotential || '$0'}\n\n` +
-        `👉 [To'liq interaktiv audit panelda](${dashboardUrl})`,
-        { parse_mode: "Markdown" }
-      );
+      const dashboardUrl = `${getDashboardUrl()}/${lang}/dashboard#channel-audit`;
+
+      const auditResponse =
+        lang === "ru"
+          ? `🔍 **TubePilot AI Аудит: ${data.channelTitle} (${data.channelHandle})**\n\n` +
+            `🏆 **Оценка канала:** Grade ${data.grade} (${data.overallScore}/100)\n` +
+            `👥 **Подписчики:** ${data.subscribers} | 👁️ **Просмотры:** ${data.totalViews}\n\n` +
+            `⚡ **Скорость просмотров (VPH):** ${data.vph.currentVph} (Пик: ${data.vph.peakVph})\n` +
+            `📈 **Динамика рекомендаций:** ${data.vph.velocityTrend}\n\n` +
+            `💰 **Монетизация & RPM (${data.monetization.regionBadge || 'Рыночный CPM'}):**\n` +
+            `• Расчетный RPM: **${data.monetization.estimatedRpm}**\n` +
+            `• Доход от AdSense: **${data.monetization.breakdown?.monthlyAdsense || data.monetization.projectedMonthlyMin} / мес**\n` +
+            `• Shorts vs Длинные видео: **${data.monetization.breakdown?.longFormEstimate || '$0'}** / **${data.monetization.breakdown?.shortsEstimate || '$0'}**\n` +
+            `• Спонсорский потенциал: **${data.monetization.breakdown?.sponsorshipPotential || '$0'}**\n` +
+            `• Чистый диапазон: **${data.monetization.projectedMonthlyMin} – ${data.monetization.projectedMonthlyMax} / мес**\n\n` +
+            `📊 **Показатели:**\n` +
+            `• SEO & Поиск: ${data.scores.seo}/100\n` +
+            `• Удержание: ${data.scores.engagement}/100\n` +
+            `• Кликабельность обложек (CTR): ${data.scores.thumbnail}/100\n\n` +
+            `💡 **Совет от ИИ:** ${data.aiRecommendations[0] || 'Увеличьте контраст превью для роста CTR.'}\n\n` +
+            `👉 [Открыть полный отчет в дашборде](${dashboardUrl})`
+          : lang === "en"
+          ? `🔍 **TubePilot AI Audit: ${data.channelTitle} (${data.channelHandle})**\n\n` +
+            `🏆 **Channel Grade:** Grade ${data.grade} (${data.overallScore}/100)\n` +
+            `👥 **Subscribers:** ${data.subscribers} | 👁️ **Total Views:** ${data.totalViews}\n\n` +
+            `⚡ **Views Per Hour (VPH):** ${data.vph.currentVph} (Peak: ${data.vph.peakVph})\n` +
+            `📈 **Algorithmic Trend:** ${data.vph.velocityTrend}\n\n` +
+            `💰 **Monetization & RPM (${data.monetization.regionBadge || 'Market CPM'}):**\n` +
+            `• Estimated RPM: **${data.monetization.estimatedRpm}**\n` +
+            `• Monthly AdSense: **${data.monetization.breakdown?.monthlyAdsense || data.monetization.projectedMonthlyMin} / mo**\n` +
+            `• Shorts vs Long-form: **${data.monetization.breakdown?.longFormEstimate || '$0'}** / **${data.monetization.breakdown?.shortsEstimate || '$0'}**\n` +
+            `• Brand Sponsorship: **${data.monetization.breakdown?.sponsorshipPotential || '$0'}**\n` +
+            `• Total Net Range: **${data.monetization.projectedMonthlyMin} – ${data.monetization.projectedMonthlyMax} / mo**\n\n` +
+            `📊 **Category Scores:**\n` +
+            `• SEO & Search Intent: ${data.scores.seo}/100\n` +
+            `• Engagement Velocity: ${data.scores.engagement}/100\n` +
+            `• Thumbnail CTR Potential: ${data.scores.thumbnail}/100\n\n` +
+            `💡 **AI Strategy Advice:** ${data.aiRecommendations[0] || 'Maintain high thumbnail subject contrast.'}\n\n` +
+            `👉 [Open Full Interactive Audit](${dashboardUrl})`
+          : `🔍 **TubePilot AI Audit: ${data.channelTitle} (${data.channelHandle})**\n\n` +
+            `🏆 **Kanal Bahosi:** Grade ${data.grade} (${data.overallScore}/100 ball)\n` +
+            `👥 **Obunachilar:** ${data.subscribers} | 👁️ **Ko'rishlar:** ${data.totalViews}\n\n` +
+            `⚡ **VPH Tezligi (Views Per Hour):** ${data.vph.currentVph} (Eng yuqori: ${data.vph.peakVph})\n` +
+            `📈 **Tavsiyalar oqimi:** ${data.vph.velocityTrend}\n\n` +
+            `💰 **Monetizatsiya & RPM (${data.monetization.regionBadge || 'Bozor ko\'rsatkichi'}):**\n` +
+            `• Kutilayotgan RPM: **${data.monetization.estimatedRpm}** (1000 ko'rish uchun)\n` +
+            `• Oylik AdSense daromadi: **${data.monetization.breakdown?.monthlyAdsense || data.monetization.projectedMonthlyMin} / oy**\n` +
+            `• Shorts vs Katta videolar: **${data.monetization.breakdown?.longFormEstimate || '$0'}** / **${data.monetization.breakdown?.shortsEstimate || '$0'}**\n` +
+            `• Homiylik (Sponsorship) salohiyati: **${data.monetization.breakdown?.sponsorshipPotential || '$0'} / post**\n` +
+            `• Umumiy daromad koridori: **${data.monetization.projectedMonthlyMin} – ${data.monetization.projectedMonthlyMax} / oy**\n\n` +
+            `📊 **Bo'limlar tahlili:**\n` +
+            `• SEO & Qidiruv: ${data.scores.seo}/100\n` +
+            `• Tomoshabin jalbi: ${data.scores.engagement}/100\n` +
+            `• Muqova CTR salohiyati: ${data.scores.thumbnail}/100\n\n` +
+            `💡 **AI Rivojlanish Maslahati:** ${data.aiRecommendations[0] || 'Muqovada obyekt kontrastini oshiring.'}\n\n` +
+            `👉 [To'liq audit hisobotini panelda ko'rish](${dashboardUrl})`;
+
+      await ctx.reply(auditResponse, { parse_mode: "Markdown" });
       return;
     } catch (err: any) {
-      await ctx.reply(`⚠️ Kanal topilmadi yoki xatolik yuz berdi: ${err.message}`);
-      return;
+      console.warn("Direct channel audit error:", err.message);
     }
   }
 
-  // When user asks "Bu qanday bot?", sends help query, or any text message:
-  // Respond with the comprehensive, well-formatted guide in their chosen language with inline buttons!
-  await sendIntroHelpGuide(ctx);
+  // 2. If it's a general question (Conversational AI Creator Assistant powered by Google Gemini):
+  const aiThinkingMsg =
+    lang === "ru"
+      ? "🤖 *TubePilot AI анализирует с помощью Google Gemini...*"
+      : lang === "en"
+      ? "🤖 *TubePilot AI is consulting Google Gemini...*"
+      : "🤖 *TubePilot AI Google Gemini orqali tahlil qilmoqda...*";
+
+  const placeholderMsg = await ctx.reply(aiThinkingMsg, { parse_mode: "Markdown" });
+
+  try {
+    const geminiReply = await GeminiService.askCreatorAssistant(text, lang);
+    await ctx.reply(geminiReply, { parse_mode: "Markdown" });
+  } catch (err: any) {
+    console.error("Gemini conversation error:", err);
+    const fallbackResponse =
+      lang === "ru"
+        ? `💡 **TubePilot AI Эксперт:**\n\nYouTube по вашему вопросу: "${text}". Для стабильного роста удерживайте внимание зрителей в первые 30 секунд и используйте кликабельные контрастные обложки (CTR 8%+).`
+        : `💡 **TubePilot AI Ekspert:**\n\nSizning savolingiz: "${text}". YouTube'da muvaffaqiyat uchun videoning dastlabki 30 soniyasida tomoshabin diqqatini ushlab qoling va yuqori kontrastli muqovalardan (CTR 8%+) foydalaning!`;
+
+    await ctx.reply(fallbackResponse, { parse_mode: "Markdown" });
+  }
 });
 
 // -----------------------------------------------------------------------------

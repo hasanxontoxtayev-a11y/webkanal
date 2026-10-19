@@ -28,6 +28,7 @@ interface ConnectChannelModalProps {
 export function ConnectChannelModal({
   isOpen,
   onClose,
+  onDemoConnect,
   currentChannelTitle,
   isCurrentlyConnected,
   onDisconnect,
@@ -139,10 +140,66 @@ export function ConnectChannelModal({
           </button>
 
           {/* Trust & Security Footnote */}
-          <div className="flex items-center justify-center gap-1.5 text-[11px] text-gray-400 pt-2">
+          <div className="flex items-center justify-center gap-1.5 text-[11px] text-gray-400 pt-1 pb-1">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
             <span>Google OAuth 2.0 & YouTube Data API v3 xavfsiz ulanishi</span>
           </div>
+
+          {/* Quick Connect By Handle/Name Divider */}
+          <div className="relative flex py-2 items-center">
+            <div className="flex-grow border-t border-dark-700"></div>
+            <span className="flex-shrink mx-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+              yoki kanal nomi / havolasi orqali
+            </span>
+            <div className="flex-grow border-t border-dark-700"></div>
+          </div>
+
+          {/* Quick Search & Connect Form */}
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const form = e.currentTarget;
+              const input = form.elements.namedItem('channelQuery') as HTMLInputElement;
+              const val = input?.value?.trim();
+              if (!val) return;
+              setLoading(true);
+              try {
+                const res = await fetch(`/api/channels/audit?q=${encodeURIComponent(val)}`);
+                const data = await res.json();
+                if (data.success && data.data) {
+                  onDemoConnect({
+                    title: data.data.channelTitle,
+                    subscribers: data.data.subscribers,
+                    views: data.data.totalViews,
+                    avatar: data.data.avatarUrl,
+                    handle: data.data.channelHandle,
+                  });
+                  onClose();
+                } else {
+                  alert("Kanal topilmadi. Qaytadan tekshirib ko'ring.");
+                }
+              } catch (err) {
+                console.error("Direct channel connect error:", err);
+              } finally {
+                setLoading(false);
+              }
+            }}
+            className="flex gap-2"
+          >
+            <input
+              name="channelQuery"
+              type="text"
+              placeholder="@kanal_nomi yoki havola..."
+              className="flex-1 px-3.5 py-2.5 rounded-xl bg-dark-900 border border-dark-700 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-rose-500 transition-colors"
+            />
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold text-xs shadow-md transition-all disabled:opacity-50"
+            >
+              Ulash
+            </button>
+          </form>
         </div>
       </div>
     </div>

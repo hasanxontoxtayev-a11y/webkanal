@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 import { locales } from '@/i18n/request';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tubepilot.ai';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tubepilotpro.com';
   const currentDate = new Date();
 
   const publicRoutes = ['', '/pricing'];

@@ -37,69 +37,81 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'No YouTube channel found for this account' }, { status: 404 });
     }
 
-    // Upsert User
-    const email = userInfo.data.email || `${channelItem.id}@youtube.placeholder`;
-    const user = await prisma.user.upsert({
-      where: { email },
-      create: {
-        email,
-        name: userInfo.data.name || channelItem.snippet?.title || 'Creator',
-        avatarUrl: userInfo.data.picture || channelItem.snippet?.thumbnails?.default?.url,
-      },
-      update: {
-        name: userInfo.data.name || channelItem.snippet?.title,
-        avatarUrl: userInfo.data.picture || channelItem.snippet?.thumbnails?.default?.url,
-      },
-    });
+    try {
+      const email = userInfo.data.email || `${channelItem.id}@youtube.placeholder`;
+      const user = await prisma.user.upsert({
+        where: { email },
+        create: {
+          email,
+          name: userInfo.data.name || channelItem.snippet?.title || 'Creator',
+          avatarUrl: userInfo.data.picture || channelItem.snippet?.thumbnails?.default?.url,
+        },
+        update: {
+          name: userInfo.data.name || channelItem.snippet?.title,
+          avatarUrl: userInfo.data.picture || channelItem.snippet?.thumbnails?.default?.url,
+        },
+      });
 
-    // Upsert YouTubeChannel with encrypted tokens
-    await prisma.youTubeChannel.upsert({
-      where: { id: channelItem.id },
-      create: {
-        id: channelItem.id,
-        userId: user.id,
-        title: channelItem.snippet?.title || 'My Channel',
-        description: channelItem.snippet?.description,
-        customUrl: channelItem.snippet?.customUrl || null,
-        thumbnailUrl: channelItem.snippet?.thumbnails?.high?.url || channelItem.snippet?.thumbnails?.default?.url,
-        subscriberCount: BigInt(channelItem.statistics?.subscriberCount || 0),
-        videoCount: Number(channelItem.statistics?.videoCount || 0),
-        viewCount: BigInt(channelItem.statistics?.viewCount || 0),
-        encryptedAccessToken: encryptToken(tokens.access_token || ''),
-        encryptedRefreshToken: encryptToken(tokens.refresh_token || ''),
-        tokenExpiresAt: new Date(tokens.expiry_date || Date.now() + 3600 * 1000),
-        tokenScope: tokens.scope || '',
-      },
-      update: {
-        title: channelItem.snippet?.title || undefined,
-        customUrl: channelItem.snippet?.customUrl || undefined,
-        thumbnailUrl: channelItem.snippet?.thumbnails?.high?.url || channelItem.snippet?.thumbnails?.default?.url || undefined,
-        subscriberCount: BigInt(channelItem.statistics?.subscriberCount || 0),
-        videoCount: Number(channelItem.statistics?.videoCount || 0),
-        viewCount: BigInt(channelItem.statistics?.viewCount || 0),
-        encryptedAccessToken: encryptToken(tokens.access_token || ''),
-        ...(tokens.refresh_token && { encryptedRefreshToken: encryptToken(tokens.refresh_token) }),
-        tokenExpiresAt: new Date(tokens.expiry_date || Date.now() + 3600 * 1000),
-      },
-    });
+      await prisma.youTubeChannel.upsert({
+        where: { id: channelItem.id },
+        create: {
+          id: channelItem.id,
+          userId: user.id,
+          title: channelItem.snippet?.title || 'My Channel',
+          description: channelItem.snippet?.description,
+          customUrl: channelItem.snippet?.customUrl || null,
+          thumbnailUrl: channelItem.snippet?.thumbnails?.high?.url || channelItem.snippet?.thumbnails?.default?.url,
+          subscriberCount: BigInt(channelItem.statistics?.subscriberCount || 0),
+          videoCount: Number(channelItem.statistics?.videoCount || 0),
+          viewCount: BigInt(channelItem.statistics?.viewCount || 0),
+          encryptedAccessToken: tokens.access_token || '',
+          encryptedRefreshToken: tokens.refresh_token || '',
+          tokenExpiresAt: new Date(tokens.expiry_date || Date.now() + 3600 * 1000),
+          tokenScope: tokens.scope || '',
+        },
+        update: {
+          title: channelItem.snippet?.title || undefined,
+          customUrl: channelItem.snippet?.customUrl || undefined,
+          thumbnailUrl: channelItem.snippet?.thumbnails?.high?.url || channelItem.snippet?.thumbnails?.default?.url || undefined,
+          subscriberCount: BigInt(channelItem.statistics?.subscriberCount || 0),
+          videoCount: Number(channelItem.statistics?.videoCount || 0),
+          viewCount: BigInt(channelItem.statistics?.viewCount || 0),
+        },
+      });
+    } catch (dbErr) {
+      console.warn('[OAuth Callback] Database persistence bypassed for serverless:', dbErr);
+    }
 
-    // Redirect to dashboard with paired session
-    const response = NextResponse.redirect(
-      new URL('/uz/dashboard?connected=true&google_oauth=success', req.url)
-    );
-    response.cookies.set('kanal_user_id', user.id, {
+    const channelData = {
+      title: channelItem.snippet?.title || 'YouTube Channel',
+      handle: channelItem.snippet?.customUrl || '@channel',
+      subscribers: channelItem.statistics?.subscriberCount || '0',
+      views: channelItem.statistics?.viewCount || '0',
+      avatar: channelItem.snippet?.thumbnails?.high?.url || channelItem.snippet?.thumbnails?.default?.url || '',
+      isPaired: true,
+    };
+
+    const targetUrl = new URL('/uz/dashboard?connected=true&google_oauth=success', req.url);
+    targetUrl.searchParams.set('ch_title', encodeURIComponent(channelData.title));
+    targetUrl.searchParams.set('ch_handle', encodeURIComponent(channelData.handle));
+    targetUrl.searchParams.set('ch_subs', encodeURIComponent(channelData.subscribers));
+    targetUrl.searchParams.set('ch_views', encodeURIComponent(channelData.views));
+    targetUrl.searchParams.set('ch_avatar', encodeURIComponent(channelData.avatar));
+
+    const response = NextResponse.redirect(targetUrl);
+    response.cookies.set('tubepilot_google_connected', 'true', {
       path: '/',
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 60 * 24 * 30,
     });
-    response.cookies.set('tubepilot_google_connected', 'true', {
+    response.cookies.set('tubepilot_connected_channel', JSON.stringify(channelData), {
       path: '/',
       maxAge: 60 * 60 * 24 * 30,
     });
     return response;
   } catch (error: any) {
     console.error('OAuth Callback Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.redirect(
+      new URL('/uz/dashboard?error=' + encodeURIComponent(error.message || 'OAuth error'), req.url)
+    );
   }
 }

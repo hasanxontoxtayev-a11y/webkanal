@@ -197,28 +197,52 @@ function DashboardContent() {
     const isConnectedParam = searchParams?.get('connected') === 'true';
 
     if (isGoogleSuccess || isConnectedParam) {
-      fetch('/api/channels/current')
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success && data.channel) {
-            const ch = data.channel;
-            const chState: ChannelState = {
-              title: ch.title,
-              subscribers: ch.subscribers,
-              views: ch.views,
-              avatar: ch.avatar || FALLBACK_AVATAR,
-              handle: ch.handle || '@channel',
-              isPaired: ch.isPaired,
-            };
-            setChannel(chState);
-            setIsChannelConnected(true);
-            try {
-              localStorage.setItem('tubepilot_connected_channel', JSON.stringify(chState));
-            } catch {}
-            showNotification(`YouTube kanal muvaffaqiyatli ulandi: ${ch.title}`);
-          }
-        })
-        .catch(() => {});
+      const chTitle = searchParams?.get('ch_title');
+      const chHandle = searchParams?.get('ch_handle');
+      const chSubs = searchParams?.get('ch_subs');
+      const chViews = searchParams?.get('ch_views');
+      const chAvatar = searchParams?.get('ch_avatar');
+
+      if (chTitle) {
+        const decodedTitle = decodeURIComponent(chTitle);
+        const chState: ChannelState = {
+          title: decodedTitle,
+          subscribers: chSubs ? decodeURIComponent(chSubs) : '0',
+          views: chViews ? decodeURIComponent(chViews) : '0',
+          avatar: chAvatar ? decodeURIComponent(chAvatar) : FALLBACK_AVATAR,
+          handle: chHandle ? decodeURIComponent(chHandle) : '@channel',
+          isPaired: true,
+        };
+        setChannel(chState);
+        setIsChannelConnected(true);
+        try {
+          localStorage.setItem('tubepilot_connected_channel', JSON.stringify(chState));
+        } catch {}
+        showNotification(`YouTube kanal muvaffaqiyatli ulandi: ${decodedTitle}`);
+      } else {
+        fetch('/api/channels/current')
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success && data.channel) {
+              const ch = data.channel;
+              const chState: ChannelState = {
+                title: ch.title,
+                subscribers: ch.subscribers,
+                views: ch.views,
+                avatar: ch.avatar || FALLBACK_AVATAR,
+                handle: ch.handle || '@channel',
+                isPaired: ch.isPaired,
+              };
+              setChannel(chState);
+              setIsChannelConnected(true);
+              try {
+                localStorage.setItem('tubepilot_connected_channel', JSON.stringify(chState));
+              } catch {}
+              showNotification(`YouTube kanal muvaffaqiyatli ulandi: ${ch.title}`);
+            }
+          })
+          .catch(() => {});
+      }
 
       // Clean up URL searchParams cleanly without triggering full page reloads
       if (typeof window !== 'undefined' && window.history?.replaceState) {

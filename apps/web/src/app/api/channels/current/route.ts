@@ -5,17 +5,18 @@ export async function GET(req: NextRequest) {
   try {
     const userId = req.cookies.get('kanal_user_id')?.value;
 
-    let user = userId
-      ? await prisma.user.findUnique({
-          where: { id: userId },
-          include: { channel: true },
-        })
-      : null;
-
-    if (!user) {
-      user = await prisma.user.findFirst({
-        include: { channel: true },
-      });
+    let user = null;
+    try {
+      user = userId
+        ? await prisma.user.findUnique({
+            where: { id: userId },
+            include: { channel: true },
+          })
+        : await prisma.user.findFirst({
+            include: { channel: true },
+          });
+    } catch (userDbErr) {
+      console.warn('User DB query bypassed in /api/channels/current:', userDbErr);
     }
 
     let ch = user?.channel;

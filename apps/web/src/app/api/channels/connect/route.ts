@@ -13,8 +13,9 @@ function parseBigIntSafe(val: any): bigint {
 }
 
 export async function POST(req: NextRequest) {
+  let body: any = null;
   try {
-    const body = await req.json();
+    body = await req.json();
     const { title, subscribers, views, avatar, handle, videoCount } = body;
 
     if (!title) {

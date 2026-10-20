@@ -98,6 +98,36 @@ export async function GET(req: NextRequest) {
     targetUrl.searchParams.set('ch_views', encodeURIComponent(channelData.views));
     targetUrl.searchParams.set('ch_avatar', encodeURIComponent(channelData.avatar));
 
+    // Send instant Telegram notification if bot token and user/channel exists
+    try {
+      const botToken = process.env.TELEGRAM_BOT_TOKEN || '8793624781:AAH50ARJWxJKAS2NTWaeC9ijPaiipTY73P4';
+      const pairedUser = await prisma.user.findFirst({
+        where: { telegramChatId: { not: null } },
+        orderBy: { updatedAt: 'desc' },
+      });
+
+      if (pairedUser?.telegramChatId) {
+        const msg =
+          `🚀 **TubePilot: Yangi YouTube Kanal Muvaffaqiyatli Ulandi!** 📺\n\n` +
+          `📌 Kanal: **${channelData.title}** (${channelData.handle})\n` +
+          `👥 Obunachilar: **${channelData.subscribers}**\n` +
+          `👁️ Jami ko'rishlar: **${channelData.views}**\n\n` +
+          `🟢 Tizim faol: AI izohlar yordamchisi, teglash va video tahlillari sinxronlandi!`;
+
+        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: pairedUser.telegramChatId.toString(),
+            text: msg,
+            parse_mode: 'Markdown',
+          }),
+        });
+      }
+    } catch (tgNotifyErr) {
+      console.warn('[OAuth Callback] Telegram alert skipped:', tgNotifyErr);
+    }
+
     const response = NextResponse.redirect(targetUrl);
     response.cookies.set('tubepilot_google_connected', 'true', {
       path: '/',

@@ -600,13 +600,88 @@ bot.on("message:text", async (ctx) => {
   const userIdFrom = BigInt(ctx.from?.id || 0);
   const lang = await getUserLang(userIdFrom);
 
-  // 1. Check if user typed a channel handle, channel name, or YouTube URL:
-  // e.g. "kunuz", "@kunuz_official", "subyektiv", "mrbeast", "https://youtube.com/@..."
+  // Instant response for Persistent Menu buttons (0ms delay)
+  if (text.includes("Главное Меню") || text.includes("Main Menu") || text.includes("Asosiy Menyu")) {
+    return sendIntroHelpGuide(ctx);
+  }
+
+  if (text.includes("Аудит Канала") || text.includes("Audit Channel") || text.includes("Kanal Auditi")) {
+    return ctx.reply(
+      lang === "ru"
+        ? "🔍 **Канал аудити:**\n\nIstalgan YouTube kanali @handle yoki havolasini yuboring (masalan: `@kunuz` yoki `https://youtube.com/@kunuz`).\nTubePilot AI real vaqtda VPH, CTR va daromadni hisoblab beradi!"
+        : "🔍 **Kanal Auditi:**\n\nIstalgan YouTube kanali @handle yoki havolasini yuboring (masalan: `@kunuz` yoki `https://youtube.com/@kunuz`).\nTubePilot AI soniyalar ichida VPH, CTR va daromadni chiqarib beradi!",
+      { parse_mode: "Markdown" }
+    );
+  }
+
+  if (text.includes("CTR Vision")) {
+    return ctx.reply(
+      lang === "ru"
+        ? "🖼️ **CTR Vision:**\n\nОтправьте сюда картинку обложки видео (превью).\nGemini Vision контраст, читаемость на смартфонах и перекрытие таймкодом проверят за 1 секунду!"
+        : "🖼️ **CTR Vision:**\n\nVideongizning muqova (oblojka) rasmini to'g'ridan-to'g'ri shu chatga yuboring!\nGemini Vision uning kontrasti, smartfonda o'qilishi va 00:00 belgisi xavfini darhol tahlil qiladi.",
+      { parse_mode: "Markdown" }
+    );
+  }
+
+  if (text.includes("Мой Канал") || text.includes("My Channel") || text.includes("Kanalim")) {
+    let user = await prisma.user.findFirst({
+      where: { telegramUserId: userIdFrom },
+      include: { channel: true },
+    });
+    if (!user) user = await prisma.user.findFirst({ include: { channel: true } });
+    const channel = user?.channel;
+    const dashboardUrl = `${getDashboardUrl()}/${lang}/dashboard`;
+
+    if (!channel) {
+      return ctx.reply(
+        `ℹ️ YouTube kanal ulanmagan.\n\nBoshqaruv paneliga o'tib, kanalni 1-bosishda ulang:\n👉 ${dashboardUrl}`
+      );
+    }
+
+    return ctx.reply(
+      `📺 **Ulangan Kanal: ${channel.title}**\n` +
+      `👥 Obunachilar: ${channel.subscriberCount.toLocaleString()}\n` +
+      `👁️ Jami ko'rishlar: ${channel.viewCount.toLocaleString()}\n` +
+      `🎬 Videolar soni: ${channel.videoCount}\n\n` +
+      `👉 [Boshqaruv panelida ochish](${dashboardUrl})`,
+      { parse_mode: "Markdown" }
+    );
+  }
+
+  if (text.includes("Язык") || text.includes("Language") || text.includes("Tilni Tanlash")) {
+    const keyboard = new InlineKeyboard()
+      .text("🇺🇿 O'zbekcha", "set_lang:uz:none")
+      .row()
+      .text("🇷🇺 Русский", "set_lang:ru:none")
+      .row()
+      .text("🇬🇧 English", "set_lang:en:none");
+
+    return ctx.reply("🌐 Tilni tanlang / Выберите язык / Select language:", {
+      reply_markup: keyboard,
+      parse_mode: "Markdown",
+    });
+  }
+
+  if (text.includes("FAQ")) {
+    return ctx.reply(
+      `❓ **TubePilot AI — FAQ:**\n\n` +
+      `1️⃣ **TubePilot AI nima?**\n` +
+      `Bu YouTube ijodkorlari uchun VidIQ muqobili bo'lgan avtonom AI kopilotidir.\n\n` +
+      `2️⃣ **CTR Vision qanday ishlaydi?**\n` +
+      `Istalgan muqova rasmini yuborsangiz, AI uning kontrast va o'qilishini tekshiradi.\n\n` +
+      `3️⃣ **Boshqaruv paneli:**\n` +
+      `👉 ${getDashboardUrl()}/${lang}/dashboard`,
+      { parse_mode: "Markdown" }
+    );
+  }
+
+  // 1. Check if user typed a channel handle or YouTube URL:
+  // e.g. "@kunuz", "youtube.com/@kunuz", "https://youtu.be/..."
   const isDirectAuditCandidate =
     text.startsWith("@") ||
     text.includes("youtube.com/") ||
     text.includes("youtu.be/") ||
-    /^[a-zA-Z0-9_\-\.]{3,30}$/.test(text);
+    (text.startsWith("UC") && text.length === 24);
 
   if (isDirectAuditCandidate) {
     const searchingMsg =

@@ -149,8 +149,8 @@ export function ConnectChannelModal({
             <div className="flex gap-2">
               <input
                 type="text"
-                placeholder="Masalan: @TaoroGamesRu"
-                defaultValue="@TaoroGamesRu"
+                placeholder="Masalan: @velora-p5n yoki YouTube URL"
+                defaultValue="@velora-p5n"
                 id="instant_channel_input"
                 className="flex-1 bg-dark-900 border border-slate-700 focus:border-malla-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 outline-none"
               />
@@ -158,31 +158,30 @@ export function ConnectChannelModal({
                 type="button"
                 onClick={async () => {
                   const input = document.getElementById('instant_channel_input') as HTMLInputElement;
-                  const query = input?.value?.trim() || '@TaoroGamesRu';
+                  const query = input?.value?.trim() || '@velora-p5n';
                   setLoading(true);
                   try {
                     const res = await fetch(`/api/channels/audit?q=${encodeURIComponent(query)}`);
                     const json = await res.json();
                     if (json.success && json.data) {
                       const d = json.data;
+                      const channelPayload = {
+                        title: d.channelTitle || query.replace('@', ''),
+                        subscribers: d.subscribers || '607',
+                        views: d.totalViews || '207,132',
+                        avatar: d.avatarUrl || 'https://yt3.ggpht.com/GoOGcR0ck5VRCkqt2UAubdPZqSbz5eHOzR1Nui5SECFb5WNLDNFHYXpDkOgv_dfDZDguWok6KQ=s176-c-k-c0x00ffffff-no-rj-mo',
+                        handle: d.channelHandle || (query.startsWith('@') ? query : `@${query}`),
+                        isPaired: true,
+                      };
                       await fetch('/api/channels/connect', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          title: d.channelTitle || query,
-                          subscribers: d.subscribers || '21.1K',
-                          views: d.totalViews || '23,725,717',
-                          avatar: d.avatarUrl || 'https://yt3.googleusercontent.com/U8I9dfyYzVwWQsPV9HWuoe07WN6JF8a4halCcHgtbjkCHColcBZij1JDpyTyuWQ1P0dpuaxtSA=s900-c-k-c0x00ffffff-no-rj',
-                          handle: d.channelHandle || query,
-                        }),
+                        body: JSON.stringify(channelPayload),
                       });
-                      onDemoConnect({
-                        title: d.channelTitle || query,
-                        subscribers: d.subscribers || '21.1K',
-                        views: d.totalViews || '23,725,717',
-                        avatar: d.avatarUrl || 'https://yt3.googleusercontent.com/U8I9dfyYzVwWQsPV9HWuoe07WN6JF8a4halCcHgtbjkCHColcBZij1JDpyTyuWQ1P0dpuaxtSA=s900-c-k-c0x00ffffff-no-rj',
-                        handle: d.channelHandle || query,
-                      });
+                      try {
+                        localStorage.setItem('tubepilot_connected_channel', JSON.stringify(channelPayload));
+                      } catch {}
+                      onDemoConnect(channelPayload);
                       onClose();
                       window.location.reload();
                     }

@@ -124,7 +124,7 @@ export function ConnectChannelModal({
                   });
                   onClose();
                 } else {
-                  alert("Kanal topilmadi. Kanal nomi yoki @handle'ni tekshirib ko'ring (masalan: @TaoroGamesRu)");
+                  alert("Kanal topilmadi. Kanal nomi, havolasi yoki @handle ni tekshirib qaytadan kiriting.");
                 }
               } catch (err) {
                 console.error("Direct channel connect error:", err);
@@ -140,8 +140,7 @@ export function ConnectChannelModal({
                 name="channelQuery"
                 type="text"
                 required
-                defaultValue="@TaoroGamesRu"
-                placeholder="Kanal nomi yoki @handle (masalan: @TaoroGamesRu)..."
+                placeholder="YouTube kanal nomi, havolasi yoki @handle..."
                 className="flex-1 px-4 py-3.5 rounded-2xl bg-dark-900 border border-dark-650 text-white placeholder-gray-500 text-xs sm:text-sm focus:outline-none focus:border-rose-500 transition-colors shadow-inner"
               />
               <button
@@ -155,47 +154,11 @@ export function ConnectChannelModal({
             <div className="flex items-center justify-between text-[11px] text-gray-400">
               <span className="flex items-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                Parolsiz xavfsiz ulanish
+                Xavfsiz va tezkor ulanish
               </span>
-              <span>1 soniyada tayyor</span>
+              <span>Barcha global kanallar qo'llab-quvvatlanadi</span>
             </div>
           </form>
-
-          {/* Quick Connect suggestions */}
-          <div className="pt-2">
-            <p className="text-[11px] text-gray-500 text-left mb-2 font-medium">Tezkor namunalar:</p>
-            <div className="flex flex-wrap gap-1.5">
-              {['@TaoroGamesRu', '@kunuz', '@Subyektivist'].map((h) => (
-                <button
-                  key={h}
-                  type="button"
-                  disabled={loading}
-                  onClick={async () => {
-                    setLoading(true);
-                    try {
-                      const res = await fetch(`/api/channels/audit?q=${encodeURIComponent(h)}`);
-                      const data = await res.json();
-                      if (data.success && data.data) {
-                        onDemoConnect({
-                          title: data.data.channelTitle,
-                          subscribers: data.data.subscribers,
-                          views: data.data.totalViews,
-                          avatar: data.data.avatarUrl,
-                          handle: data.data.channelHandle,
-                        });
-                        onClose();
-                      }
-                    } finally {
-                      setLoading(false);
-                    }
-                  }}
-                  className="px-2.5 py-1 rounded-xl bg-dark-750 hover:bg-dark-700 text-gray-300 hover:text-white border border-dark-650 text-[11px] transition-colors"
-                >
-                  {h}
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* Divider */}
           <div className="relative flex py-2 items-center">

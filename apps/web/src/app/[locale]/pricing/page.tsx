@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { LocaleSwitcher } from '@/components/LocaleSwitcher';
+import { TubePilotLogo } from '@/components/TubePilotLogo';
+import { AmbientBackgroundMesh } from '@/components/AmbientBackgroundMesh';
 import {
   Check,
   X,
@@ -21,9 +23,8 @@ import {
   Flame,
   HelpCircle,
 } from 'lucide-react';
-import { YoutubeIcon as Youtube } from '@/components/YoutubeIcon';
 
-export default function PricingPage() {
+function PricingContent() {
   const params = useParams();
   const locale = (params?.locale as string) || 'uz';
   const t = useTranslations('pricing');
@@ -80,28 +81,26 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-gray-100 flex flex-col selection:bg-rose-500 selection:text-white">
+    <div className="min-h-screen bg-dark-950 text-slate-100 flex flex-col selection:bg-malla-500 selection:text-white relative overflow-hidden">
+      {/* Ambient background mesh */}
+      <AmbientBackgroundMesh />
+
       {/* Top Navbar */}
-      <header className="sticky top-0 z-40 w-full border-b border-gray-800/80 bg-black/70 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 w-full border-b border-malla-600/20 bg-dark-900/85 backdrop-blur-2xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <Link href={`/${locale}/dashboard`} className="flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-rose-600 to-red-500 flex items-center justify-center shadow-lg shadow-rose-950/40 group-hover:scale-105 transition-transform">
-                <Youtube className="w-4 h-4 text-white fill-white" />
-              </div>
-              <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
-                TubePilot <span className="text-rose-500 font-black">AI</span>
-              </span>
+            <Link href={`/${locale}/dashboard`} className="transition-transform hover:scale-[1.02] active:scale-[0.98]">
+              <TubePilotLogo size="sm" showText={true} />
             </Link>
 
-            <nav className="hidden md:flex items-center gap-4 text-xs font-semibold text-gray-400">
+            <nav className="hidden md:flex items-center gap-4 text-xs font-semibold text-slate-400">
               <Link
                 href={`/${locale}/dashboard`}
                 className="hover:text-white transition-colors"
               >
                 {tNav('dashboard')}
               </Link>
-              <span className="text-rose-400 font-bold border-b-2 border-rose-500 pb-0.5">
+              <span className="text-malla-300 font-bold border-b-2 border-malla-400 pb-0.5">
                 {tNav('pricing')}
               </span>
             </nav>
@@ -111,9 +110,9 @@ export default function PricingPage() {
             <LocaleSwitcher />
             <Link
               href={`/${locale}/dashboard`}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-gray-900 hover:bg-gray-800 text-gray-200 border border-gray-800 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-dark-800 hover:bg-dark-750 text-slate-200 border border-slate-700 hover:border-malla-500/30 transition-all shadow-sm"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
+              <ArrowLeft className="w-3.5 h-3.5 text-malla-400" />
               <span className="hidden sm:inline">Panelga qaytish</span>
             </Link>
           </div>
@@ -437,7 +436,7 @@ export default function PricingPage() {
                   <td className="py-3 px-4 text-center text-emerald-400">Cheksiz + Prioritet</td>
                 </tr>
                 <tr>
-                  <td className="py-3 px-4 font-medium">Ko'p tilli Izohlar AI Kopiloti</td>
+                  <td className="py-3 px-4 font-medium">Ko&apos;p tilli Izohlar AI Kopiloti</td>
                   <td className="py-3 px-4 text-center text-gray-500">Oddiy</td>
                   <td className="py-3 px-4 text-center text-emerald-400">Avtomatik ovoz moslashuvi</td>
                   <td className="py-3 px-4 text-center text-emerald-400">Avto-yuborish + Telegram</td>
@@ -449,10 +448,10 @@ export default function PricingPage() {
                   <td className="py-3 px-4 text-center text-emerald-400"><Check className="w-4 h-4 mx-auto text-emerald-400" /></td>
                 </tr>
                 <tr>
-                  <td className="py-3 px-4 font-medium">Raqobatchilarni to'liq josuslik qilish (Spy)</td>
+                  <td className="py-3 px-4 font-medium">Raqobatchilarni to&apos;liq josuslik qilish (Spy)</td>
                   <td className="py-3 px-4 text-center text-gray-500"><X className="w-4 h-4 mx-auto text-gray-600" /></td>
                   <td className="py-3 px-4 text-center text-gray-500"><X className="w-4 h-4 mx-auto text-gray-600" /></td>
-                  <td className="py-3 px-4 text-center text-purple-400 font-bold"><Check className="w-4 h-4 mx-auto text-purple-400" /></td>
+                  <td className="py-3 px-4 text-purple-400 font-bold text-center"><Check className="w-4 h-4 mx-auto text-purple-400" /></td>
                 </tr>
                 <tr>
                   <td className="py-3 px-4 font-medium">Telegram VIP Bot signallari va ogohlantirishlar</td>
@@ -466,13 +465,13 @@ export default function PricingPage() {
         </div>
 
         {/* Guarantees */}
-        <div className="max-w-3xl mx-auto text-center border-t border-gray-800 pt-8 text-xs sm:text-sm text-gray-400 flex flex-col sm:flex-row items-center justify-center gap-6">
+        <div className="max-w-3xl mx-auto text-center border-t border-slate-800 pt-8 text-xs sm:text-sm text-slate-400 flex flex-col sm:flex-row items-center justify-center gap-6">
           <div className="flex items-center gap-2">
             <Shield className="w-5 h-5 text-emerald-400" />
-            <span>30-kunlik to'liq qaytarish kafolati</span>
+            <span>30-kunlik to&apos;liq qaytarish kafolati</span>
           </div>
           <div className="flex items-center gap-2">
-            <Check className="w-5 h-5 text-rose-500" />
+            <Check className="w-5 h-5 text-malla-400" />
             <span>Istalgan vaqt 1 bosishda bekor qilish</span>
           </div>
           <div className="flex items-center gap-2">
@@ -482,5 +481,13 @@ export default function PricingPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function PricingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-dark-950" />}>
+      <PricingContent />
+    </Suspense>
   );
 }

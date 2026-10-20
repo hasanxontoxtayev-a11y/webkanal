@@ -8,8 +8,8 @@
     "activeTab"
   ],
   "host_permissions": [
-    "https://www.youtube.com/*",
-    "https://studio.youtube.com/*",
+    "*://*.youtube.com/*",
+    "*://youtube.com/*",
     "https://www.tubepilotpro.com/*",
     "https://tubepilotpro.com/*",
     "http://localhost:3001/*",
@@ -22,8 +22,8 @@
   "content_scripts": [
     {
       "matches": [
-        "https://www.youtube.com/*",
-        "https://studio.youtube.com/*"
+        "*://*.youtube.com/*",
+        "*://youtube.com/*"
       ],
       "js": ["content.js"],
       "css": ["styles.css"],

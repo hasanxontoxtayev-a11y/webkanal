@@ -28,6 +28,9 @@ function PricingContent() {
   const params = useParams();
   const locale = (params?.locale as string) || 'uz';
   const t = useTranslations('pricing');
+  const tStarter = useTranslations('pricing.starter');
+  const tPro = useTranslations('pricing.pro');
+  const tElite = useTranslations('pricing.elite');
   const tNav = useTranslations('nav');
 
   const [isAnnual, setIsAnnual] = useState(false);
@@ -183,7 +186,7 @@ function PricingContent() {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-bold text-gray-200 uppercase tracking-wider">
-                  {t('starter.name')}
+                  {tStarter('name')}
                 </h3>
                 {currentTier === 'FREE' && (
                   <span className="px-2.5 py-0.5 text-xs font-semibold bg-gray-800 text-gray-300 rounded-full border border-gray-700">
@@ -192,29 +195,29 @@ function PricingContent() {
                 )}
               </div>
               <div className="mt-2 flex items-baseline gap-1.5">
-                <span className="text-4xl font-black text-white">{t('starter.price')}</span>
+                <span className="text-4xl font-black text-white">{tStarter('price')}</span>
                 <span className="text-sm text-gray-500">{t('freeForever')}</span>
               </div>
               <p className="mt-3 text-xs sm:text-sm text-gray-400 leading-relaxed">
-                {t('starter.desc')}
+                {tStarter('desc')}
               </p>
 
               <div className="mt-8 space-y-3.5 border-t border-gray-800/80 pt-6">
                 <div className="flex items-start gap-3 text-xs sm:text-sm text-gray-300">
                   <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <span>{t('starter.f1')}</span>
+                  <span>{tStarter('f1')}</span>
                 </div>
                 <div className="flex items-start gap-3 text-xs sm:text-sm text-gray-300">
                   <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <span>{t('starter.f2')}</span>
+                  <span>{tStarter('f2')}</span>
                 </div>
                 <div className="flex items-start gap-3 text-xs sm:text-sm text-gray-300">
                   <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <span>{t('starter.f3')}</span>
+                  <span>{tStarter('f3')}</span>
                 </div>
                 <div className="flex items-start gap-3 text-xs sm:text-sm text-gray-300">
                   <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <span>{t('starter.f4')}</span>
+                  <span>{tStarter('f4')}</span>
                 </div>
               </div>
             </div>
@@ -234,7 +237,7 @@ function PricingContent() {
                 ) : currentTier === 'FREE' ? (
                   t('currentPlan')
                 ) : (
-                  t('starter.cta')
+                  tStarter('cta')
                 )}
               </button>
             </div>
@@ -257,7 +260,7 @@ function PricingContent() {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-bold text-rose-400 uppercase tracking-wider">
-                  {t('pro.name')}
+                  {tPro('name')}
                 </h3>
                 {currentTier === 'PRO' && (
                   <span className="px-2.5 py-0.5 text-xs font-semibold bg-rose-500/20 text-rose-300 rounded-full border border-rose-500/40">
@@ -267,34 +270,34 @@ function PricingContent() {
               </div>
               <div className="mt-2 flex items-baseline gap-1.5">
                 <span className="text-4xl font-black text-white">
-                  {isAnnual ? t('pro.priceAnnual') : t('pro.price')}
+                  {isAnnual ? tPro('priceAnnual') : tPro('price')}
                 </span>
                 <span className="text-sm text-gray-400">{t('perMonth')}</span>
               </div>
               <p className="mt-3 text-xs sm:text-sm text-gray-400 leading-relaxed">
-                {t('pro.desc')}
+                {tPro('desc')}
               </p>
 
               <div className="mt-8 space-y-3.5 border-t border-rose-500/20 pt-6">
                 <div className="flex items-start gap-3 text-xs sm:text-sm text-gray-200">
                   <Check className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-                  <span className="font-semibold text-white">{t('pro.f1')}</span>
+                  <span className="font-semibold text-white">{tPro('f1')}</span>
                 </div>
                 <div className="flex items-start gap-3 text-xs sm:text-sm text-gray-200">
                   <Check className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-                  <span>{t('pro.f2')}</span>
+                  <span>{tPro('f2')}</span>
                 </div>
                 <div className="flex items-start gap-3 text-xs sm:text-sm text-gray-200">
                   <Check className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-                  <span>{t('pro.f3')}</span>
+                  <span>{tPro('f3')}</span>
                 </div>
                 <div className="flex items-start gap-3 text-xs sm:text-sm text-gray-200">
                   <Check className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-                  <span>{t('pro.f4')}</span>
+                  <span>{tPro('f4')}</span>
                 </div>
                 <div className="flex items-start gap-3 text-xs sm:text-sm text-gray-200">
                   <Check className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-                  <span>{t('pro.f5')}</span>
+                  <span>{tPro('f5')}</span>
                 </div>
               </div>
             </div>
@@ -315,7 +318,7 @@ function PricingContent() {
                   t('currentPlan')
                 ) : (
                   <>
-                    {t('pro.cta')}
+                    {tPro('cta')}
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -340,7 +343,7 @@ function PricingContent() {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-bold text-purple-400 uppercase tracking-wider">
-                  {t('elite.name')}
+                  {tElite('name')}
                 </h3>
                 {currentTier === 'ELITE' && (
                   <span className="px-2.5 py-0.5 text-xs font-semibold bg-purple-500/20 text-purple-300 rounded-full border border-purple-500/40">
@@ -350,34 +353,34 @@ function PricingContent() {
               </div>
               <div className="mt-2 flex items-baseline gap-1.5">
                 <span className="text-4xl font-black text-white">
-                  {isAnnual ? t('elite.priceAnnual') : t('elite.price')}
+                  {isAnnual ? tElite('priceAnnual') : tElite('price')}
                 </span>
                 <span className="text-sm text-gray-400">{t('perMonth')}</span>
               </div>
               <p className="mt-3 text-xs sm:text-sm text-gray-400 leading-relaxed">
-                {t('elite.desc')}
+                {tElite('desc')}
               </p>
 
               <div className="mt-8 space-y-3.5 border-t border-purple-500/20 pt-6">
                 <div className="flex items-start gap-3 text-xs sm:text-sm text-purple-200">
                   <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
-                  <span className="font-semibold text-white">{t('elite.f1')}</span>
+                  <span className="font-semibold text-white">{tElite('f1')}</span>
                 </div>
                 <div className="flex items-start gap-3 text-xs sm:text-sm text-purple-200">
                   <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
-                  <span className="font-semibold text-white">{t('elite.f2')}</span>
+                  <span className="font-semibold text-white">{tElite('f2')}</span>
                 </div>
                 <div className="flex items-start gap-3 text-xs sm:text-sm text-purple-200">
                   <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
-                  <span>{t('elite.f3')}</span>
+                  <span>{tElite('f3')}</span>
                 </div>
                 <div className="flex items-start gap-3 text-xs sm:text-sm text-purple-200">
                   <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
-                  <span>{t('elite.f4')}</span>
+                  <span>{tElite('f4')}</span>
                 </div>
                 <div className="flex items-start gap-3 text-xs sm:text-sm text-purple-200">
                   <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
-                  <span>{t('elite.f5')}</span>
+                  <span>{tElite('f5')}</span>
                 </div>
               </div>
             </div>
@@ -398,7 +401,7 @@ function PricingContent() {
                   t('currentPlan')
                 ) : (
                   <>
-                    {t('elite.cta')}
+                    {tElite('cta')}
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}

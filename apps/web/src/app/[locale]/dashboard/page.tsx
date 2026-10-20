@@ -653,6 +653,38 @@ function DashboardContent() {
 
         {/* Best Posting Time Heatmap Section */}
         <PostingHeatmap />
+
+        {/* Global Verification Footer */}
+        <footer className="mt-16 pt-8 pb-12 border-t border-dark-750 text-center text-xs text-gray-500 space-y-3">
+          <div className="flex flex-wrap justify-center gap-6 text-gray-400">
+            <Link href="/privacy" className="hover:text-rose-400 transition-colors">
+              Privacy Policy
+            </Link>
+            <a
+              href="https://www.youtube.com/t/terms"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-rose-400 transition-colors"
+            >
+              YouTube Terms of Service
+            </a>
+            <a
+              href="https://policies.google.com/privacy"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-rose-400 transition-colors"
+            >
+              Google Privacy Policy
+            </a>
+            <a
+              href="mailto:hasanxontoxtayev@gmail.com"
+              className="hover:text-rose-400 transition-colors"
+            >
+              Contact Support
+            </a>
+          </div>
+          <p>© 2026 TubePilot AI (tubepilotpro.com). All rights reserved.</p>
+        </footer>
       </main>
 
       {/* Onboarding 1-Minute Video Welcome Modal */}

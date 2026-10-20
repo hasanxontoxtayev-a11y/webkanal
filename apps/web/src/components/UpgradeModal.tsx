@@ -93,13 +93,13 @@ export function UpgradeModal({
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-8">
           {featureGatedTitle ? (
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold mb-3">
-              <Sparkles className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-malla-500/10 border border-malla-500/30 text-malla-300 text-xs font-semibold mb-3">
+              <Sparkles className="w-3.5 h-3.5 text-malla-400" />
               {featureGatedTitle}
             </div>
           ) : (
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold mb-3">
-              <Crown className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-malla-500/10 border border-malla-500/30 text-malla-300 text-xs font-semibold mb-3">
+              <Crown className="w-3.5 h-3.5 text-malla-400" />
               TubePilot AI VIP Subscription
             </div>
           )}
@@ -112,12 +112,12 @@ export function UpgradeModal({
           </p>
 
           {/* Billing Interval Toggle */}
-          <div className="mt-5 inline-flex items-center p-1 bg-gray-900 border border-gray-800 rounded-full">
+          <div className="mt-5 inline-flex items-center p-1 bg-dark-900 border border-slate-800 rounded-full">
             <button
               onClick={() => setIsAnnual(false)}
               className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all ${
                 !isAnnual
-                  ? 'bg-gradient-to-r from-rose-500 to-red-600 text-white shadow-md'
+                  ? 'bg-gradient-to-r from-malla-600 to-amber-600 text-white shadow-md'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
@@ -127,7 +127,7 @@ export function UpgradeModal({
               onClick={() => setIsAnnual(true)}
               className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all flex items-center gap-1.5 ${
                 isAnnual
-                  ? 'bg-gradient-to-r from-rose-500 to-red-600 text-white shadow-md'
+                  ? 'bg-gradient-to-r from-malla-600 to-amber-600 text-white shadow-md'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
@@ -221,23 +221,23 @@ export function UpgradeModal({
           <div
             className={`relative rounded-2xl border p-6 flex flex-col justify-between transition-all scale-[1.02] shadow-xl ${
               currentTier === 'PRO'
-                ? 'bg-gradient-to-b from-rose-950/40 via-gray-900 to-gray-950 border-rose-500 ring-2 ring-rose-500/30'
-                : 'bg-gradient-to-b from-rose-950/20 via-gray-900 to-gray-950 border-rose-500/50 hover:border-rose-500'
+                ? 'bg-gradient-to-b from-malla-950/40 via-dark-900 to-dark-950 border-malla-500 ring-2 ring-malla-500/30'
+                : 'bg-gradient-to-b from-malla-950/20 via-dark-900 to-dark-950 border-malla-500/50 hover:border-malla-400'
             }`}
           >
             {/* Popular Badge */}
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-gradient-to-r from-rose-500 to-red-600 text-white text-[11px] font-bold shadow-md uppercase tracking-wider flex items-center gap-1">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-gradient-to-r from-malla-600 to-amber-600 text-white text-[11px] font-bold shadow-md uppercase tracking-wider flex items-center gap-1">
               <Zap className="w-3 h-3 fill-white" />
               {t('popular')}
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-bold text-rose-400 uppercase tracking-wider">
+                <span className="text-sm font-bold text-malla-400 uppercase tracking-wider">
                   {t('pro.name')}
                 </span>
                 {currentTier === 'PRO' && (
-                  <span className="px-2 py-0.5 text-[10px] font-semibold bg-rose-500/20 text-rose-300 rounded-full border border-rose-500/30">
+                  <span className="px-2 py-0.5 text-[10px] font-semibold bg-malla-500/20 text-malla-300 rounded-full border border-malla-500/30">
                     {t('currentPlan')}
                   </span>
                 )}
@@ -254,23 +254,23 @@ export function UpgradeModal({
 
               <div className="mt-6 space-y-3">
                 <div className="flex items-start gap-2.5 text-xs text-gray-200">
-                  <Check className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-malla-400 shrink-0 mt-0.5" />
                   <span className="font-medium">{t('pro.f1')}</span>
                 </div>
                 <div className="flex items-start gap-2.5 text-xs text-gray-200">
-                  <Check className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-malla-400 shrink-0 mt-0.5" />
                   <span>{t('pro.f2')}</span>
                 </div>
                 <div className="flex items-start gap-2.5 text-xs text-gray-200">
-                  <Check className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-malla-400 shrink-0 mt-0.5" />
                   <span>{t('pro.f3')}</span>
                 </div>
                 <div className="flex items-start gap-2.5 text-xs text-gray-200">
-                  <Check className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-malla-400 shrink-0 mt-0.5" />
                   <span>{t('pro.f4')}</span>
                 </div>
                 <div className="flex items-start gap-2.5 text-xs text-gray-200">
-                  <Check className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-malla-400 shrink-0 mt-0.5" />
                   <span>{t('pro.f5')}</span>
                 </div>
               </div>
@@ -280,10 +280,10 @@ export function UpgradeModal({
               <button
                 disabled={currentTier === 'PRO' || loadingTier !== null}
                 onClick={() => handleSelectTier('PRO')}
-                className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-rose-950/50 ${
+                className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-malla-950/50 ${
                   currentTier === 'PRO'
-                    ? 'bg-rose-950/60 text-rose-300 border border-rose-500/30 cursor-default'
-                    : 'bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white'
+                    ? 'bg-malla-950/80 text-malla-300 border border-malla-500/40 cursor-default'
+                    : 'bg-gradient-to-r from-malla-600 via-amber-600 to-malla-500 hover:from-malla-500 hover:to-amber-500 text-white'
                 }`}
               >
                 {loadingTier === 'PRO' ? (

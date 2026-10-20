@@ -395,7 +395,7 @@ function DashboardContent() {
         ) : (
           <button
             onClick={() => setShowConnectModal(true)}
-            className="flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-extrabold rounded-2xl bg-gradient-to-r from-rose-600 via-pink-600 to-rose-600 hover:from-rose-500 hover:to-pink-500 text-white transition-all shadow-lg shadow-rose-900/40 hover:scale-[1.02] active:scale-[0.98] border border-rose-400/40"
+            className="flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-extrabold rounded-2xl bg-gradient-to-r from-malla-600 via-amber-600 to-malla-500 hover:from-malla-500 hover:to-amber-500 text-white transition-all shadow-lg shadow-malla-950/50 hover:scale-[1.02] active:scale-[0.98] border border-malla-400/40"
           >
             <Youtube className="w-4 h-4 sm:w-5 sm:h-5 text-white flex-shrink-0" />
             <span>{tDash('connectPersonalChannel')}</span>
@@ -404,17 +404,17 @@ function DashboardContent() {
 
         {/* Live System Status Badges & Utilities */}
         <div className="flex items-center gap-3">
-          {/* Subscription Tier & Upgrade to Pro Button */}
+          {/* Subscription Tier & Upgrade to Pro Button (Opens UpgradeModal directly) */}
           <button
             onClick={() => {
               setUpgradeFeature(undefined);
               setShowUpgradeModal(true);
             }}
-            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-black rounded-xl transition-all shadow-lg active:scale-95 ${
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-black rounded-xl transition-all shadow-lg active:scale-95 ${
               subscriptionTier === 'FREE'
-                ? 'bg-gradient-to-r from-amber-500 via-rose-500 to-red-600 hover:from-amber-400 hover:to-red-500 text-white shadow-rose-950/40 hover:shadow-rose-900/60'
+                ? 'bg-gradient-to-r from-malla-600 via-amber-600 to-amber-700 hover:from-malla-500 hover:to-amber-600 text-white shadow-malla-950/40 hover:shadow-malla-900/60 border border-malla-400/30'
                 : subscriptionTier === 'PRO'
-                ? 'bg-gradient-to-r from-rose-500/20 to-pink-500/20 text-rose-300 border border-rose-500/40 hover:bg-rose-500/30'
+                ? 'bg-gradient-to-r from-malla-600/20 to-amber-500/20 text-malla-300 border border-malla-500/40 hover:bg-malla-500/30'
                 : 'bg-gradient-to-r from-purple-500/20 to-indigo-500/20 text-purple-300 border border-purple-500/40 hover:bg-purple-500/30'
             }`}
             title="SaaS Subscription Plans"
@@ -422,7 +422,7 @@ function DashboardContent() {
             {subscriptionTier === 'FREE' ? (
               <>
                 <Crown className="w-3.5 h-3.5 fill-white text-white" />
-                <span>⭐ Upgrade to Pro</span>
+                <span>⭐ PRO</span>
               </>
             ) : (
               <>
@@ -431,13 +431,6 @@ function DashboardContent() {
               </>
             )}
           </button>
-
-          <Link
-            href={`/${locale}/pricing`}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-gray-300 hover:text-white rounded-xl bg-dark-850 hover:bg-dark-800 border border-dark-700 transition-all shadow-sm"
-          >
-            <span>Tariflar</span>
-          </Link>
 
           <LocaleSwitcher />
         </div>

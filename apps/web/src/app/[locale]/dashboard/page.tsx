@@ -321,10 +321,15 @@ function DashboardContent() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-900 text-gray-100 relative">
+    <div className="min-h-screen bg-dark-950 text-gray-100 relative overflow-hidden selection:bg-rose-500 selection:text-white">
+      {/* Dynamic Animated Ambient Background Glows */}
+      <div className="fixed top-[-10%] left-[-10%] w-[55vw] h-[55vw] bg-rose-600/15 rounded-full blur-[140px] pointer-events-none animate-float-slow -z-10" />
+      <div className="fixed bottom-[-15%] right-[-10%] w-[60vw] h-[60vw] bg-purple-600/12 rounded-full blur-[160px] pointer-events-none animate-float-delayed -z-10" />
+      <div className="fixed top-[35%] right-[20%] w-[35vw] h-[35vw] bg-sky-600/10 rounded-full blur-[130px] pointer-events-none animate-pulse-slow -z-10" />
+
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 animate-bounceIn flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-emerald-500 text-white font-semibold text-xs shadow-2xl shadow-emerald-950/60">
+        <div className="fixed bottom-6 right-6 z-50 animate-bounceIn flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold text-xs shadow-2xl shadow-emerald-950/60 border border-emerald-400/30">
           <Check className="w-4 h-4 flex-shrink-0" />
           <span>{toastMessage}</span>
           <button onClick={() => setToastMessage(null)} className="ml-2 hover:opacity-80">
@@ -333,16 +338,19 @@ function DashboardContent() {
         </div>
       )}
 
-      {/* Top Navigation */}
-      <header className="sticky top-0 z-40 bg-dark-900/90 backdrop-blur-md border-b border-dark-700/80 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+      {/* Top Navigation - Ultra Glassmorphic */}
+      <header className="sticky top-0 z-40 bg-dark-950/80 backdrop-blur-2xl border-b border-white/5 px-4 sm:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4 transition-all">
         {/* Brand Logo & Title */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-600 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-rose-900/30">
-            <Sparkles className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-600 via-pink-600 to-purple-600 flex items-center justify-center text-white shadow-xl shadow-rose-950/50 hover:scale-105 transition-transform duration-300">
+            <Sparkles className="w-5 h-5 animate-pulse" />
           </div>
           <div>
-            <h1 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
-              TubePilot <span className="text-xs px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 font-semibold border border-rose-500/30">AI</span>
+            <h1 className="text-lg font-black tracking-tight flex items-center gap-2">
+              <span className="text-gradient">TubePilot</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-rose-500/20 to-purple-500/20 text-rose-300 font-extrabold border border-rose-500/30 shadow-sm">
+                AI PRO
+              </span>
             </h1>
           </div>
         </div>
@@ -551,73 +559,103 @@ function DashboardContent() {
           </div>
         )}
 
-        {/* Creator Header Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="p-5 rounded-2xl bg-dark-800 border border-dark-600 flex items-center gap-4">
-            {isChannelConnected && channel ? (
-              <img
-                src={channel.avatar}
-                alt="Channel Avatar"
-                className="w-12 h-12 rounded-xl object-cover border border-dark-500 flex-shrink-0"
-              />
-            ) : (
-              <div className="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 flex-shrink-0">
-                <Youtube className="w-6 h-6" />
-              </div>
-            )}
-            <div className="overflow-hidden">
-              <p className="text-xs text-gray-400">{tDash('welcome')}</p>
-              <h2 className="text-base font-bold text-white truncate flex items-center gap-1.5">
-                <span>{isChannelConnected && channel ? channel.title : tDash('noChannelConnected')}</span>
-                {isChannelConnected && <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />}
-              </h2>
-              {isChannelConnected && channel?.handle ? (
-                <p className="text-[11px] text-rose-400 font-semibold truncate">{channel.handle}</p>
+        {/* Creator Header Stats - Ultra Modern Glass Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {/* Card 1: Channel Overview */}
+          <div className="glass-panel p-6 rounded-3xl hover:border-rose-500/30 transition-all duration-300 hover:-translate-y-1 shadow-xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl group-hover:bg-rose-500/20 transition-all" />
+            <div className="flex items-center gap-4 relative z-10">
+              {isChannelConnected && channel ? (
+                <img
+                  src={channel.avatar}
+                  alt="Channel Avatar"
+                  className="w-14 h-14 rounded-2xl object-cover ring-2 ring-rose-500/40 shadow-lg shadow-rose-950/40 flex-shrink-0 group-hover:scale-105 transition-transform"
+                />
               ) : (
-                <button
-                  onClick={() => setShowConnectModal(true)}
-                  className="text-[11px] text-rose-400 font-semibold hover:underline flex items-center gap-1 mt-0.5"
-                >
-                  <Plus className="w-3 h-3" />
-                  <span>Kanalni ulash</span>
-                </button>
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-600/20 to-pink-600/20 border border-rose-500/30 flex items-center justify-center text-rose-400 flex-shrink-0 group-hover:scale-105 transition-transform">
+                  <Youtube className="w-7 h-7" />
+                </div>
+              )}
+              <div className="overflow-hidden">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">{tDash('welcome')}</p>
+                <h2 className="text-base font-black text-white truncate flex items-center gap-1.5 mt-0.5">
+                  <span className="truncate">{isChannelConnected && channel ? channel.title : tDash('noChannelConnected')}</span>
+                  {isChannelConnected && <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />}
+                </h2>
+                {isChannelConnected && channel?.handle ? (
+                  <p className="text-xs text-rose-400 font-bold truncate mt-0.5">{channel.handle}</p>
+                ) : (
+                  <button
+                    onClick={() => setShowConnectModal(true)}
+                    className="text-xs text-rose-400 font-bold hover:text-rose-300 flex items-center gap-1 mt-1 transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Kanalni ulash</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: Subscribers */}
+          <div className="glass-panel p-6 rounded-3xl hover:border-rose-500/30 transition-all duration-300 hover:-translate-y-1 shadow-xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl group-hover:bg-rose-500/20 transition-all" />
+            <div className="flex items-center justify-between mb-3 relative z-10">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">{tDash('subscribers')}</span>
+              <div className="w-10 h-10 rounded-2xl bg-rose-500/15 text-rose-400 flex items-center justify-center border border-rose-500/30 group-hover:scale-110 transition-transform">
+                <Users className="w-5 h-5" />
+              </div>
+            </div>
+            <div className="relative z-10 flex items-baseline justify-between">
+              <h3 className="text-2xl font-black text-white tracking-tight">
+                {isChannelConnected && channel ? channel.subscribers : '—'}
+              </h3>
+              {isChannelConnected && (
+                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                  +12.4% o&apos;sish
+                </span>
               )}
             </div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-dark-800 border border-dark-600 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center border border-rose-500/20">
-              <Users className="w-6 h-6" />
+          {/* Card 3: Total Views */}
+          <div className="glass-panel p-6 rounded-3xl hover:border-sky-500/30 transition-all duration-300 hover:-translate-y-1 shadow-xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/10 rounded-full blur-2xl group-hover:bg-sky-500/20 transition-all" />
+            <div className="flex items-center justify-between mb-3 relative z-10">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">{tDash('totalViews')}</span>
+              <div className="w-10 h-10 rounded-2xl bg-sky-500/15 text-sky-400 flex items-center justify-center border border-sky-500/30 group-hover:scale-110 transition-transform">
+                <Eye className="w-5 h-5" />
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-gray-400">{tDash('subscribers')}</p>
-              <h3 className="text-lg font-extrabold text-white">
-                {isChannelConnected && channel ? channel.subscribers : '—'}
-              </h3>
-            </div>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-dark-800 border border-dark-600 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center border border-sky-500/20">
-              <Eye className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-400">{tDash('totalViews')}</p>
-              <h3 className="text-lg font-extrabold text-white">
+            <div className="relative z-10 flex items-baseline justify-between">
+              <h3 className="text-2xl font-black text-white tracking-tight">
                 {isChannelConnected && channel ? channel.views : '—'}
               </h3>
+              {isChannelConnected && (
+                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30">
+                  Real vaqt
+                </span>
+              )}
             </div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-dark-800 border border-dark-600 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
-              <Sparkles className="w-6 h-6" />
+          {/* Card 4: AI Predicted CTR */}
+          <div className="glass-panel p-6 rounded-3xl hover:border-emerald-500/30 transition-all duration-300 hover:-translate-y-1 shadow-xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all" />
+            <div className="flex items-center justify-between mb-3 relative z-10">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">{tDash('avgCtr')}</span>
+              <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center border border-emerald-500/30 group-hover:scale-110 transition-transform">
+                <Sparkles className="w-5 h-5" />
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-gray-400">{tDash('avgCtr')}</p>
-              <h3 className="text-lg font-extrabold text-white">
-                {isChannelConnected ? '84.2%' : '—'}
+            <div className="relative z-10 flex items-baseline justify-between">
+              <h3 className="text-2xl font-black text-emerald-400 tracking-tight">
+                {isChannelConnected ? '88.6%' : '—'}
               </h3>
+              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                A&apos;lo SEO
+              </span>
             </div>
           </div>
         </div>

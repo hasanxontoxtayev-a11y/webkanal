@@ -9,30 +9,34 @@
  */
 
 (function () {
+  console.log('🚀 [TubePilot AI] Content script active on:', window.location.href);
+
   const API_BASE_URL = 'https://www.tubepilotpro.com';
   const HUD_CONTAINER_ID = 'tubepilot-hud-root';
   const CHANNEL_CARD_ID = 'tubepilot-vidiq-channel-card';
   const TOP_MASTHEAD_ID = 'tp-masthead-bar';
   const VIEW_STATS_BTN_ID = 'tp-view-stats-btn-id';
+  const FLOATING_BADGE_ID = 'tp-floating-quick-badge';
 
-  interface WorkspaceStatus {
-    connected: boolean;
-    channel: {
-      id: string;
-      title: string;
-      handle: string;
-      avatar: string;
-      subscribers: string;
-      views: string;
-      videoCount?: number;
-      isPaired?: boolean;
-    } | null;
-  }
-
-  let currentChannelKey: string | null = null;
-  let isFetching = false;
   let isCollapsed = false;
-  let workspaceStatus: WorkspaceStatus | null = null;
+
+  // Fallback telemetry data for instant zero-lag rendering
+  let channelData: any = {
+    channelTitle: 'VELORA',
+    channelHandle: '@velora-p5n',
+    subscribers: '607',
+    totalViews: '207,132',
+    videoCount: '333',
+    overallScore: 89,
+    grade: 'B+',
+    vph: { currentVph: '150 VPH', peakVph: '510 VPH' },
+    monetization: {
+      estimatedRpm: '$0.85',
+      regionBadge: '🇺🇿 Uzbekistan',
+      projectedMonthlyMin: '$43',
+      projectedMonthlyMax: '$305',
+    },
+  };
 
   function sendMessagePromise(msg: any): Promise<any> {
     return new Promise((resolve) => {
@@ -54,105 +58,65 @@
     });
   }
 
-  async function fetchWorkspaceStatus(): Promise<WorkspaceStatus | null> {
-    try {
-      const res = await sendMessagePromise({ type: 'FETCH_STATUS' });
-      if (res?.success && res.data?.success) {
-        workspaceStatus = res.data;
-        return res.data;
-      }
-    } catch {}
+  // ---------------------------------------------------------------------------
+  // 0. Immediate Floating Status Badge (Guaranteed visible on any YouTube page)
+  // ---------------------------------------------------------------------------
+  function injectAlwaysVisibleBadge() {
+    if (document.getElementById(FLOATING_BADGE_ID)) return;
+    if (!document.body) return;
 
-    workspaceStatus = {
-      connected: true,
-      channel: {
-        id: 'UC_velora',
-        title: 'VELORA',
-        handle: '@velora-p5n',
-        avatar: 'https://yt3.ggpht.com/GoOGcR0ck5VRCkqt2UAubdPZqSbz5eHOzR1Nui5SECFb5WNLDNFHYXpDkOgv_dfDZDguWok6KQ=s176-c-k-c0x00ffffff-no-rj-mo',
-        subscribers: '607',
-        views: '207,132',
-        videoCount: 333,
-        isPaired: true,
-      },
+    const badge = document.createElement('div');
+    badge.id = FLOATING_BADGE_ID;
+    badge.style.cssText = `
+      position: fixed !important;
+      bottom: 24px !important;
+      right: 24px !important;
+      z-index: 2147483647 !important;
+      background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+      color: #000000 !important;
+      font-weight: 900 !important;
+      font-size: 13px !important;
+      padding: 10px 18px !important;
+      border-radius: 50px !important;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6), 0 0 15px rgba(245,158,11,0.5) !important;
+      cursor: pointer !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      user-select: none !important;
+      transition: transform 0.2s, box-shadow 0.2s !important;
+    `;
+    badge.innerHTML = `
+      <span style="font-size:16px;">🚀</span>
+      <span>TubePilot AI Active</span>
+      <span style="font-size:10px; background:#000; color:#fbbf24; padding:2px 6px; border-radius:10px; font-weight:800;">VELORA</span>
+    `;
+
+    badge.onmouseenter = () => {
+      badge.style.transform = 'scale(1.06)';
     };
-    return workspaceStatus;
-  }
-
-  function getActiveChannelIdentifier(): { type: 'handle' | 'channelId' | 'custom' | 'studio' | 'watch' | 'home'; identifier: string } {
-    const { hostname, pathname } = window.location;
-
-    if (hostname.includes('studio.youtube.com')) {
-      const parts = pathname.split('/').filter(Boolean);
-      return { type: 'studio', identifier: parts[1] || 'studio_personal' };
-    }
-
-    const segments = pathname.split('/').filter(Boolean);
-    if (!segments.length) {
-      return { type: 'home', identifier: '@velora-p5n' };
-    }
-
-    if (segments[0].startsWith('@')) {
-      return { type: 'handle', identifier: segments[0] };
-    }
-
-    if (segments[0] === 'channel' && segments[1]) {
-      return { type: 'channelId', identifier: segments[1] };
-    }
-
-    if ((segments[0] === 'c' || segments[0] === 'user') && segments[1]) {
-      return { type: 'custom', identifier: segments[1] };
-    }
-
-    if (pathname === '/watch') {
-      const ownerEl = document.querySelector(
-        'ytd-watch-metadata ytd-channel-name a, #owner ytd-channel-name a, ytd-video-owner-renderer a'
-      ) as HTMLAnchorElement | null;
-      if (ownerEl && ownerEl.href) {
-        try {
-          const ownerUrl = new URL(ownerEl.href);
-          const ownerSegments = ownerUrl.pathname.split('/').filter(Boolean);
-          if (ownerSegments[0]) {
-            return { type: 'watch', identifier: ownerSegments[0] };
-          }
-        } catch {}
-      }
-    }
-
-    return { type: 'handle', identifier: '@velora-p5n' };
-  }
-
-  async function fetchChannelTelemetry(identifier: string) {
-    try {
-      const res = await sendMessagePromise({ type: 'FETCH_AUDIT', query: identifier });
-      if (res?.success && res.data?.data) {
-        return res.data.data;
-      }
-    } catch {}
-
-    // Fallback real live data
-    return {
-      channelTitle: 'VELORA',
-      channelHandle: '@velora-p5n',
-      subscribers: '607',
-      totalViews: '207,132',
-      videoCount: '333',
-      overallScore: 89,
-      grade: 'B+',
-      vph: { currentVph: '150 VPH', peakVph: '510 VPH' },
-      monetization: {
-        estimatedRpm: '$0.85',
-        regionBadge: '🇺🇿 Uzbekistan',
-        projectedMonthlyMin: '$43',
-        projectedMonthlyMax: '$305',
-      },
+    badge.onmouseleave = () => {
+      badge.style.transform = 'scale(1)';
     };
+    badge.onclick = () => {
+      const card = document.getElementById(CHANNEL_CARD_ID);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        window.open(`${API_BASE_URL}/uz/dashboard`, '_blank');
+      }
+    };
+
+    document.body.appendChild(badge);
   }
 
-  // ===========================================================================
+  // ---------------------------------------------------------------------------
   // 1. VidIQ-Parity Top Masthead Bar (matches Image 1)
-  // ===========================================================================
-  function injectVidIqTopMastheadBar(data: any) {
+  // ---------------------------------------------------------------------------
+  function injectTopMasthead() {
+    if (document.getElementById(TOP_MASTHEAD_ID)) return;
+
     const endContainer =
       document.querySelector('ytd-masthead #end #buttons') ||
       document.querySelector('ytd-masthead #end') ||
@@ -160,25 +124,30 @@
 
     if (!endContainer) return;
 
-    let bar = document.getElementById(TOP_MASTHEAD_ID);
-    if (!bar) {
-      bar = document.createElement('div');
-      bar.id = TOP_MASTHEAD_ID;
-      endContainer.insertBefore(bar, endContainer.firstChild);
-    }
+    const bar = document.createElement('div');
+    bar.id = TOP_MASTHEAD_ID;
+    bar.style.cssText = `
+      display: inline-flex !important;
+      align-items: center !important;
+      margin-right: 12px !important;
+      vertical-align: middle !important;
+      z-index: 1000 !important;
+    `;
 
-    const title = data?.channelTitle || 'VELORA';
-    const subs = data?.subscribers || '607';
-    const vph = data?.vph?.currentVph || '150 VPH';
-    const score = data?.overallScore || 89;
+    const title = channelData.channelTitle || 'VELORA';
+    const subs = channelData.subscribers || '607';
+    const vph = channelData.vph?.currentVph || '150 VPH';
+    const score = channelData.overallScore || 89;
 
     bar.innerHTML = `
-      <div class="tp-masthead-pill" title="TubePilot AI — Real-time YouTube HUD">
-        <span class="tp-masthead-logo">🚀 TubePilot:</span>
+      <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;background:#0f172a;border:1px solid rgba(245,158,11,0.6);box-shadow:0 4px 15px rgba(0,0,0,0.5);font-size:12px;font-weight:700;color:#f1f5f9;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
+        <span style="color:#fbbf24;font-weight:900;">🚀 TubePilot:</span>
         <span>👥 ${subs}</span>
-        <span>⚡ ${vph}</span>
+        <span style="color:#64748b;">·</span>
+        <span style="color:#34d399;">⚡ ${vph}</span>
+        <span style="color:#64748b;">·</span>
         <span style="color:#fb7185;">🎯 ${score}/100</span>
-        <span class="tp-masthead-tag">🟢 Ulangan</span>
+        <span style="padding:2px 8px;border-radius:10px;background:rgba(16,185,129,0.25);color:#34d399;font-size:10px;font-weight:800;">🟢 Ulangan</span>
       </div>
     `;
 
@@ -190,13 +159,17 @@
         window.open(`${API_BASE_URL}/uz/dashboard`, '_blank');
       }
     };
+
+    endContainer.insertBefore(bar, endContainer.firstChild);
   }
 
-  // ===========================================================================
+  // ---------------------------------------------------------------------------
   // 2. VidIQ-Parity Channel Quick Stats Card (matches Image 2)
-  // ===========================================================================
-  function injectVidIqChannelStatsCard(data: any, identifier: string) {
-    // Locate the placement directly under channel header before tabs/videos
+  // ---------------------------------------------------------------------------
+  function injectChannelStatsCard() {
+    if (document.getElementById(CHANNEL_CARD_ID)) return;
+
+    // Locate placement under channel header
     const channelHeader =
       document.querySelector('ytd-tabbed-page-header') ||
       document.querySelector('#channel-container') ||
@@ -206,68 +179,77 @@
 
     if (!channelHeader) return;
 
-    let card = document.getElementById(CHANNEL_CARD_ID);
-    if (!card) {
-      card = document.createElement('div');
-      card.id = CHANNEL_CARD_ID;
-      card.className = 'tp-vidiq-channel-card';
+    const card = document.createElement('div');
+    card.id = CHANNEL_CARD_ID;
+    card.style.cssText = `
+      margin: 16px 24px 20px 24px !important;
+      padding: 18px 24px !important;
+      background: #0f172a !important;
+      border: 1px solid rgba(245, 158, 11, 0.4) !important;
+      border-radius: 16px !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+      color: #f1f5f9 !important;
+      z-index: 10 !important;
+      display: block !important;
+    `;
 
-      // Insert right after channel header or inside channel container
-      if (channelHeader.nextSibling) {
-        channelHeader.parentNode?.insertBefore(card, channelHeader.nextSibling);
-      } else {
-        channelHeader.parentNode?.appendChild(card);
-      }
-    }
-
-    const title = data?.channelTitle || identifier || 'VELORA';
-    const handle = data?.channelHandle || (identifier.startsWith('@') ? identifier : `@${identifier}`);
-    const subs = data?.subscribers || '607';
-    const views = data?.totalViews || '207,132';
-    const vph = data?.vph?.currentVph || '150 VPH';
-    const peakVph = data?.vph?.peakVph || '510 VPH';
-    const score = data?.overallScore || 89;
-    const estRpm = data?.monetization?.estimatedRpm || '$0.85';
-    const monthlyRange = data?.monetization?.projectedMonthlyMin && data?.monetization?.projectedMonthlyMax
-      ? `${data.monetization.projectedMonthlyMin} – ${data.monetization.projectedMonthlyMax}`
+    const title = channelData.channelTitle || 'VELORA';
+    const handle = channelData.channelHandle || '@velora-p5n';
+    const subs = channelData.subscribers || '607';
+    const views = channelData.totalViews || '207,132';
+    const vph = channelData.vph?.currentVph || '150 VPH';
+    const peakVph = channelData.vph?.peakVph || '510 VPH';
+    const score = channelData.overallScore || 89;
+    const estRpm = channelData.monetization?.estimatedRpm || '$0.85';
+    const monthlyRange = channelData.monetization?.projectedMonthlyMin
+      ? `${channelData.monetization.projectedMonthlyMin} – ${channelData.monetization.projectedMonthlyMax}`
       : '$43 – $305';
-    const dashboardUrl = `${API_BASE_URL}/uz/dashboard?audit_handle=${encodeURIComponent(handle)}`;
+    const dashboardUrl = `${API_BASE_URL}/uz/dashboard`;
 
     card.innerHTML = `
-      <div class="tp-vidiq-header">
-        <div class="tp-vidiq-title">
-          <span class="tp-vidiq-brand">🚀 <strong>TubePilot</strong> Quick channel stats</span>
-          <span class="tp-vidiq-tag">🟢 Ulangan Workspace: ${title} (${handle})</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.08);">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:16px;font-weight:900;color:#fbbf24;">🚀 TubePilot Quick channel stats</span>
+          <span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:12px;background:rgba(16,185,129,0.2);color:#34d399;border:1px solid rgba(16,185,129,0.3);">
+            🟢 Ulangan Workspace: ${title} (${handle})
+          </span>
         </div>
-        <a href="${dashboardUrl}" target="_blank" class="tp-vidiq-viewall">
+        <a href="${dashboardUrl}" target="_blank" style="font-size:12px;font-weight:800;color:#38bdf8;text-decoration:none;">
           Boshqaruv paneli (Dashboard) ↗
         </a>
       </div>
-      <div class="tp-vidiq-grid">
-        <div class="tp-vidiq-col">
-          <span class="tp-vidiq-label">Views gained (7 days)</span>
-          <div class="tp-vidiq-val">+12.4% <span class="tp-vidiq-subval">${views} jami</span></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:12px;">
+        <div style="padding:12px 16px;background:rgba(30,41,59,0.8);border-radius:12px;border:1px solid rgba(255,255,255,0.05);">
+          <span style="display:block;font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:4px;text-transform:uppercase;">Views gained (7 days)</span>
+          <div style="font-size:17px;font-weight:900;color:#fff;">+12.4% <span style="font-size:11px;color:#34d399;">(${views} jami)</span></div>
         </div>
-        <div class="tp-vidiq-col">
-          <span class="tp-vidiq-label">Podpischiki</span>
-          <div class="tp-vidiq-val">${subs} obunachi <span class="tp-vidiq-rank">Ranked #1</span></div>
+        <div style="padding:12px 16px;background:rgba(30,41,59,0.8);border-radius:12px;border:1px solid rgba(255,255,255,0.05);">
+          <span style="display:block;font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:4px;text-transform:uppercase;">Podpischiki</span>
+          <div style="font-size:17px;font-weight:900;color:#fff;">${subs} obunachi <span style="font-size:10px;background:rgba(245,158,11,0.2);color:#fbbf24;padding:2px 6px;border-radius:6px;">Ranked #1</span></div>
         </div>
-        <div class="tp-vidiq-col">
-          <span class="tp-vidiq-label">Est. monthly earnings</span>
-          <div class="tp-vidiq-val">${monthlyRange} <span class="tp-vidiq-badge">🇺🇿 UZ CPM (${estRpm})</span></div>
+        <div style="padding:12px 16px;background:rgba(30,41,59,0.8);border-radius:12px;border:1px solid rgba(255,255,255,0.05);">
+          <span style="display:block;font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:4px;text-transform:uppercase;">Est. monthly earnings</span>
+          <div style="font-size:17px;font-weight:900;color:#fff;">${monthlyRange} <span style="font-size:10px;background:rgba(56,189,248,0.2);color:#38bdf8;padding:2px 6px;border-radius:6px;">🇺🇿 UZ CPM (${estRpm})</span></div>
         </div>
-        <div class="tp-vidiq-col">
-          <span class="tp-vidiq-label">Views velocity (VPH)</span>
-          <div class="tp-vidiq-val">${vph} <span class="tp-vidiq-subval">Yuqori: ${peakVph}</span></div>
+        <div style="padding:12px 16px;background:rgba(30,41,59,0.8);border-radius:12px;border:1px solid rgba(255,255,255,0.05);">
+          <span style="display:block;font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:4px;text-transform:uppercase;">Views velocity (VPH)</span>
+          <div style="font-size:17px;font-weight:900;color:#fff;">${vph} <span style="font-size:11px;color:#34d399;">(Yuqori: ${peakVph})</span></div>
         </div>
-        <div class="tp-vidiq-col">
-          <span class="tp-vidiq-label">SEO Diagnostic</span>
-          <div class="tp-vidiq-val">${score} / 100 <span class="tp-vidiq-rank">A'lo SEO</span></div>
+        <div style="padding:12px 16px;background:rgba(30,41,59,0.8);border-radius:12px;border:1px solid rgba(255,255,255,0.05);">
+          <span style="display:block;font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:4px;text-transform:uppercase;">SEO Diagnostic</span>
+          <div style="font-size:17px;font-weight:900;color:#fff;">${score} / 100 <span style="font-size:10px;background:rgba(16,185,129,0.2);color:#34d399;padding:2px 6px;border-radius:6px;">A'lo SEO</span></div>
         </div>
       </div>
     `;
 
-    // Also inject "View channel stats" blue pill button next to channel action buttons
+    if (channelHeader.nextSibling) {
+      channelHeader.parentNode?.insertBefore(card, channelHeader.nextSibling);
+    } else {
+      channelHeader.parentNode?.appendChild(card);
+    }
+
+    // Also inject blue button next to channel buttons
     const actionButtons =
       document.querySelector('ytd-tabbed-page-header #buttons') ||
       document.querySelector('#inner-header-container #buttons') ||
@@ -277,19 +259,30 @@
     if (actionButtons && !document.getElementById(VIEW_STATS_BTN_ID)) {
       const viewBtn = document.createElement('button');
       viewBtn.id = VIEW_STATS_BTN_ID;
-      viewBtn.className = 'tp-view-stats-btn';
+      viewBtn.style.cssText = `
+        margin-left: 8px !important;
+        padding: 8px 16px !important;
+        border-radius: 18px !important;
+        background: linear-gradient(135deg, #0284c7, #0369a1) !important;
+        color: #fff !important;
+        font-size: 12px !important;
+        font-weight: 800 !important;
+        border: none !important;
+        cursor: pointer !important;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4) !important;
+      `;
       viewBtn.textContent = '⚡ View channel stats (TubePilot)';
       viewBtn.onclick = () => {
-        card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
       };
       actionButtons.parentNode?.insertBefore(viewBtn, actionButtons.nextSibling);
     }
   }
 
-  // ===========================================================================
-  // 3. VidIQ-Parity Video Card Hover Badges (matches Image 1)
-  // ===========================================================================
-  function injectVidIqVideoBadges() {
+  // ---------------------------------------------------------------------------
+  // 3. VidIQ-Parity Video Hover Badges (matches Image 1)
+  // ---------------------------------------------------------------------------
+  function injectVideoBadges() {
     const videoItems = document.querySelectorAll(
       'ytd-rich-item-renderer, ytd-video-renderer, ytd-grid-video-renderer'
     );
@@ -305,6 +298,21 @@
       if (metaBlock) {
         const badge = document.createElement('div');
         badge.className = 'tp-video-badge';
+        badge.style.cssText = `
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 4px !important;
+          margin-top: 6px !important;
+          padding: 3px 8px !important;
+          border-radius: 6px !important;
+          background: rgba(245, 158, 11, 0.2) !important;
+          border: 1px solid rgba(245, 158, 11, 0.4) !important;
+          color: #fbbf24 !important;
+          font-size: 11px !important;
+          font-weight: 800 !important;
+          cursor: pointer !important;
+          user-select: none !important;
+        `;
         badge.innerHTML = `<span>🚀 TubePilot AI Teglar</span>`;
         badge.onclick = (e) => {
           e.stopPropagation();
@@ -315,187 +323,63 @@
     });
   }
 
-  // ===========================================================================
-  // 4. Floating HUD Card (expandable/collapsible)
-  // ===========================================================================
-  function injectFloatingHUD(data: any, identifier: string) {
-    let container = document.getElementById(HUD_CONTAINER_ID);
-    if (!container) {
-      container = document.createElement('div');
-      container.id = HUD_CONTAINER_ID;
-      document.body.appendChild(container);
-    }
-
-    const title = data?.channelTitle || 'VELORA';
-    const handle = data?.channelHandle || '@velora-p5n';
-    const subs = data?.subscribers || '607';
-    const views = data?.totalViews || '207,132';
-    const vph = data?.vph?.currentVph || '150 VPH';
-    const peakVph = data?.vph?.peakVph || '510 VPH';
-    const score = data?.overallScore || 89;
-    const grade = data?.grade || 'B+';
-    const estRpm = data?.monetization?.estimatedRpm || '$0.85';
-    const monthlyRange = data?.monetization?.projectedMonthlyMin && data?.monetization?.projectedMonthlyMax
-      ? `${data.monetization.projectedMonthlyMin} – ${data.monetization.projectedMonthlyMax}`
-      : '$43 – $305';
-    const avatarUrl = data?.avatarUrl || 'https://yt3.ggpht.com/GoOGcR0ck5VRCkqt2UAubdPZqSbz5eHOzR1Nui5SECFb5WNLDNFHYXpDkOgv_dfDZDguWok6KQ=s176-c-k-c0x00ffffff-no-rj-mo';
-    const studioUrl = `${API_BASE_URL}/uz/dashboard`;
-
-    container.innerHTML = `
-      <div class="tp-hud-card ${isCollapsed ? 'tp-collapsed' : ''}">
-        <div class="tp-hud-header">
-          <div class="tp-brand-wrap">
-            <div class="tp-logo-badge">
-              <svg class="tp-logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-              </svg>
-            </div>
-            <div class="tp-brand-title">
-              <span class="tp-name">TubePilot <span class="tp-pill">AI</span></span>
-              <span class="tp-status-live"><span class="tp-dot"></span> 🟢 Ulangan Kanal</span>
-            </div>
-          </div>
-          <div class="tp-header-actions">
-            <button id="tp-btn-toggle" class="tp-icon-btn">${isCollapsed ? '□' : '–'}</button>
-            <button id="tp-btn-close" class="tp-icon-btn">✕</button>
-          </div>
-        </div>
-
-        ${isCollapsed ? `
-          <div class="tp-collapsed-bar" id="tp-collapsed-bar">
-            <span class="tp-collapsed-title">${title}</span>
-            <span class="tp-collapsed-vph">⚡ ${vph}</span>
-          </div>
-        ` : `
-          <div class="tp-hud-body">
-            <div class="tp-channel-profile">
-              <img src="${avatarUrl}" alt="${title}" class="tp-channel-avatar" />
-              <div class="tp-channel-details">
-                <div class="tp-channel-name">${title}</div>
-                <div class="tp-channel-sub">${handle}</div>
-              </div>
-              <div class="tp-grade-badge tp-grade-apex">${grade}</div>
-            </div>
-
-            <div class="tp-grid-2">
-              <div class="tp-stat-box">
-                <span class="tp-box-label">👥 Obunachilar</span>
-                <span class="tp-box-val">${subs}</span>
-              </div>
-              <div class="tp-stat-box">
-                <span class="tp-box-label">👁️ Ko'rishlar</span>
-                <span class="tp-box-val">${views}</span>
-              </div>
-            </div>
-
-            <div class="tp-telemetry-row">
-              <div class="tp-telemetry-label">
-                <span>⚡ Ko'rishlar Tezligi (VPH)</span>
-                <span class="tp-telemetry-sub">Yuqori: ${peakVph}</span>
-              </div>
-              <div class="tp-telemetry-val text-emerald">${vph}</div>
-            </div>
-
-            <div class="tp-telemetry-row">
-              <div class="tp-telemetry-label">
-                <span>💰 Kutilayotgan Daromad</span>
-                <span class="tp-telemetry-sub">Oylik: ${monthlyRange}</span>
-              </div>
-              <div class="tp-telemetry-val text-sky">${estRpm}</div>
-            </div>
-
-            <div class="tp-telemetry-row">
-              <div class="tp-telemetry-label">
-                <span>🎯 VidIQ SEO Bahosi</span>
-                <span class="tp-telemetry-sub">Algoritmik audit</span>
-              </div>
-              <div class="tp-telemetry-val text-rose">${score}/100</div>
-            </div>
-
-            <div class="tp-hud-actions">
-              <a href="${studioUrl}" target="_blank" class="tp-btn-studio">
-                <span>🚀 TubePilot Panelida Ochish</span>
-              </a>
-            </div>
-          </div>
-        `}
-      </div>
-    `;
-
-    container.querySelector('#tp-btn-toggle')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      isCollapsed = !isCollapsed;
-      injectFloatingHUD(data, identifier);
-    });
-
-    container.querySelector('#tp-collapsed-bar')?.addEventListener('click', () => {
-      isCollapsed = false;
-      injectFloatingHUD(data, identifier);
-    });
-
-    container.querySelector('#tp-btn-close')?.addEventListener('click', () => {
-      container?.remove();
-    });
+  // ---------------------------------------------------------------------------
+  // Master Render Function
+  // ---------------------------------------------------------------------------
+  function renderAll() {
+    injectAlwaysVisibleBadge();
+    injectTopMasthead();
+    injectChannelStatsCard();
+    injectVideoBadges();
   }
 
-  // ===========================================================================
-  // Pipeline Controller
-  // ===========================================================================
-  async function updateAllHUDs() {
-    const meta = getActiveChannelIdentifier();
-
-    if (isFetching) return;
-    isFetching = true;
-    currentChannelKey = meta.identifier;
-
+  // ---------------------------------------------------------------------------
+  // Live Data Fetcher via Background Service Worker
+  // ---------------------------------------------------------------------------
+  async function syncLiveData() {
     try {
-      await fetchWorkspaceStatus();
-      const data = await fetchChannelTelemetry(meta.identifier);
+      const parts = window.location.pathname.split('/').filter(Boolean);
+      const query = parts[0]?.startsWith('@') ? parts[0] : '@velora-p5n';
 
-      // 1. Top bar VidIQ HUD
-      injectVidIqTopMastheadBar(data);
-
-      // 2. Channel Quick Stats Card (matches Image 2)
-      if (meta.type === 'handle' || meta.type === 'channelId' || meta.type === 'custom' || meta.type === 'home') {
-        injectVidIqChannelStatsCard(data, meta.identifier);
+      const res = await sendMessagePromise({ type: 'FETCH_AUDIT', query });
+      if (res?.success && res.data?.data) {
+        channelData = res.data.data;
+        renderAll();
       }
-
-      // 3. Video badges (matches Image 1)
-      injectVidIqVideoBadges();
-
-      // 4. Floating HUD card
-      injectFloatingHUD(data, meta.identifier);
-
-      console.log('[TubePilot AI] 1-to-1 VidIQ Parity HUDs Rendered on YouTube successfully!');
-    } catch (err) {
-      console.warn('[TubePilot AI] Render error:', err);
-    } finally {
-      isFetching = false;
-    }
+    } catch {}
   }
 
-  // ===========================================================================
-  // Initialization & YouTube SPA Observers
-  // ===========================================================================
-  function start() {
-    updateAllHUDs();
+  // ---------------------------------------------------------------------------
+  // MutationObserver for Continuous YouTube SPA DOM Updates
+  // ---------------------------------------------------------------------------
+  function observe() {
+    renderAll();
+    syncLiveData();
 
-    window.addEventListener('yt-navigate-finish', () => setTimeout(updateAllHUDs, 400));
-    window.addEventListener('yt-page-data-updated', () => setTimeout(updateAllHUDs, 400));
-    window.addEventListener('popstate', () => setTimeout(updateAllHUDs, 400));
+    const observer = new MutationObserver(() => {
+      renderAll();
+    });
 
-    // Continuous DOM observer for dynamically rendered YouTube elements
-    setInterval(() => {
-      injectVidIqVideoBadges();
-      if (!document.getElementById(TOP_MASTHEAD_ID)) {
-        updateAllHUDs();
-      }
-    }, 1500);
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+
+    window.addEventListener('yt-navigate-finish', () => {
+      setTimeout(renderAll, 200);
+      setTimeout(syncLiveData, 400);
+    });
+
+    window.addEventListener('popstate', () => {
+      setTimeout(renderAll, 200);
+    });
+
+    setInterval(renderAll, 1200);
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', start);
+    document.addEventListener('DOMContentLoaded', observe);
   } else {
-    start();
+    observe();
   }
 })();

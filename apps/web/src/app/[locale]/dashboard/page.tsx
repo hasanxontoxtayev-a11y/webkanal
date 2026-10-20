@@ -414,32 +414,15 @@ function DashboardContent() {
 
         {/* Live System Status Badges & Utilities */}
         <div className="flex items-center gap-3">
-          <div className="hidden 2xl:flex items-center gap-2 text-[11px] font-semibold text-gray-400 bg-dark-850 px-3 py-1.5 rounded-full border border-dark-700">
-            <span className="flex items-center gap-1.5 text-emerald-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              Next.js :3001
-            </span>
-            <span className="text-gray-600">·</span>
-            <span className="flex items-center gap-1.5 text-sky-400">
-              <Bot className="w-3.5 h-3.5" />
-              @Tuble_Pilot_bot Active
-            </span>
-            <span className="text-gray-600">·</span>
-            <span className="flex items-center gap-1.5 text-emerald-400" title="Local file-based SQLite database active">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              SQLite dev.db
-            </span>
-          </div>
-
           {/* Subscription Tier & Upgrade to Pro Button */}
           <button
             onClick={() => {
               setUpgradeFeature(undefined);
               setShowUpgradeModal(true);
             }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-extrabold rounded-xl transition-all shadow-md ${
+            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-black rounded-xl transition-all shadow-lg active:scale-95 ${
               subscriptionTier === 'FREE'
-                ? 'bg-gradient-to-r from-amber-500 via-rose-500 to-red-600 hover:from-amber-400 hover:to-red-500 text-white shadow-rose-950/40'
+                ? 'bg-gradient-to-r from-amber-500 via-rose-500 to-red-600 hover:from-amber-400 hover:to-red-500 text-white shadow-rose-950/40 hover:shadow-rose-900/60'
                 : subscriptionTier === 'PRO'
                 ? 'bg-gradient-to-r from-rose-500/20 to-pink-500/20 text-rose-300 border border-rose-500/40 hover:bg-rose-500/30'
                 : 'bg-gradient-to-r from-purple-500/20 to-indigo-500/20 text-purple-300 border border-purple-500/40 hover:bg-purple-500/30'
@@ -461,19 +444,10 @@ function DashboardContent() {
 
           <Link
             href={`/${locale}/pricing`}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-gray-300 hover:text-white rounded-xl bg-dark-800 hover:bg-dark-750 border border-dark-600 transition-colors shadow-sm"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-gray-300 hover:text-white rounded-xl bg-dark-850 hover:bg-dark-800 border border-dark-700 transition-all shadow-sm"
           >
             <span>Tariflar</span>
           </Link>
-
-          {/* 60s Tour Button (Allows re-opening anytime) */}
-          <button
-            onClick={() => setShowOnboarding(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-gray-300 hover:text-white rounded-xl bg-dark-800 border border-dark-600 transition-colors shadow-sm"
-          >
-            <HelpCircle className="w-3.5 h-3.5 text-rose-400" />
-            <span>60s Tour</span>
-          </button>
 
           <LocaleSwitcher />
         </div>
@@ -531,31 +505,53 @@ function DashboardContent() {
             </div>
           </div>
         ) : (
-          <div className="p-6 rounded-3xl bg-gradient-to-r from-dark-850 via-dark-800 to-dark-850 border border-rose-500/30 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-rose-600/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
-            <div className="flex items-center gap-4 z-10">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-600 to-pink-600 flex items-center justify-center text-white shadow-xl shadow-rose-900/40 flex-shrink-0">
-                <Youtube className="w-7 h-7" />
+          <div className="p-8 sm:p-10 rounded-3xl glass-panel-glow relative overflow-hidden group">
+            {/* Ambient neon radial glows */}
+            <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-gradient-to-br from-rose-500/20 via-pink-500/10 to-transparent rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-700" />
+            <div className="absolute -bottom-10 -left-10 w-80 h-80 bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
+                <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-rose-600 via-pink-600 to-purple-600 p-0.5 shadow-2xl shadow-rose-950/60 flex-shrink-0 group-hover:rotate-3 transition-transform duration-500">
+                  <div className="w-full h-full bg-dark-950 rounded-[22px] flex items-center justify-center text-white">
+                    <Youtube className="w-10 h-10 text-rose-500 animate-pulse" />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+                    <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                      YouTube Kanalingizni Bog&apos;lang
+                    </h3>
+                    <span className="px-3 py-1 rounded-full bg-rose-500/15 text-rose-300 font-extrabold text-[11px] border border-rose-500/30 uppercase tracking-widest">
+                      1-Bosishda
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-300 max-w-xl leading-relaxed">
+                    Kanal statistikangizni real vaqtda kuzating, sun&apos;iy intellekt orqali virusli teglarni oling va video ko&apos;rishlar oqimini 10 barobarga oshiring.
+                  </p>
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs text-gray-400 pt-1">
+                    <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                      <ShieldCheck className="w-4 h-4" />
+                      Google Verified API
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1.5 text-sky-400 font-bold">
+                      <Sparkles className="w-4 h-4" />
+                      Gemini Vision Tahlili
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-extrabold text-white flex items-center gap-2">
-                  <span>{tDash('noChannelConnected')}</span>
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-400 font-bold border border-rose-500/30">
-                    Oflayn
-                  </span>
-                </h3>
-                <p className="text-xs text-gray-300 mt-1 max-w-xl leading-relaxed">
-                  {tDash('noChannelPrompt')}
-                </p>
-              </div>
+
+              <button
+                onClick={() => setShowConnectModal(true)}
+                className="w-full lg:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-rose-600 via-pink-600 to-rose-600 hover:from-rose-500 hover:to-pink-500 text-white font-black text-sm sm:text-base transition-all shadow-2xl shadow-rose-950/70 hover:shadow-rose-900/90 hover:scale-105 active:scale-95 flex items-center justify-center gap-3 border border-rose-400/40 flex-shrink-0"
+              >
+                <Youtube className="w-5 h-5 fill-white" />
+                <span>+ YouTube Kanalni Ulash</span>
+              </button>
             </div>
-            <button
-              onClick={() => setShowConnectModal(true)}
-              className="z-10 w-full md:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold text-xs sm:text-sm transition-all shadow-xl shadow-rose-900/40 flex items-center justify-center gap-2 flex-shrink-0"
-            >
-              <Youtube className="w-4 h-4" />
-              <span>{tDash('connectPersonalChannel')}</span>
-            </button>
           </div>
         )}
 

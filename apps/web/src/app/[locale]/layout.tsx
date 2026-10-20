@@ -38,6 +38,9 @@ export async function generateMetadata({
     authors: [{ name: 'TubePilot AI Team', url: baseUrl }],
     creator: 'TubePilot AI',
     publisher: 'TubePilot AI',
+    verification: {
+      google: 'google8a877fc8e09efd6d',
+    },
     robots: {
       index: true,
       follow: true,

@@ -14,6 +14,8 @@ import { CommentInbox } from '@/components/CommentInbox';
 import { ThumbnailStudio } from '@/components/ThumbnailStudio';
 import { ChannelAudit } from '@/components/ChannelAudit';
 import { AiTagGenerator } from '@/components/AiTagGenerator';
+import { TubePilotLogo } from '@/components/TubePilotLogo';
+import { AmbientBackgroundMesh } from '@/components/AmbientBackgroundMesh';
 import { YoutubeIcon as Youtube } from '@/components/YoutubeIcon';
 import {
   Users,
@@ -322,10 +324,8 @@ function DashboardContent() {
 
   return (
     <div className="min-h-screen bg-dark-950 text-slate-100 relative overflow-hidden selection:bg-malla-500 selection:text-white">
-      {/* Dynamic Animated Ambient Background Glows - Malla & Slate Grey */}
-      <div className="fixed top-[-15%] left-[-10%] w-[60vw] h-[60vw] bg-malla-600/20 rounded-full blur-[150px] pointer-events-none animate-float-slow -z-10" />
-      <div className="fixed bottom-[-15%] right-[-10%] w-[65vw] h-[65vw] bg-malla-500/18 rounded-full blur-[170px] pointer-events-none animate-float-delayed -z-10" />
-      <div className="fixed top-[40%] right-[25%] w-[40vw] h-[40vw] bg-slate-600/15 rounded-full blur-[140px] pointer-events-none animate-pulse-slow -z-10" />
+      {/* Dynamic Animated Ambient Background Mesh & Cyber Dust Engine */}
+      <AmbientBackgroundMesh />
 
       {/* Toast Notification */}
       {toastMessage && (
@@ -339,21 +339,11 @@ function DashboardContent() {
       )}
 
       {/* Top Navigation - Ultra Glassmorphic Malla & Slate */}
-      <header className="sticky top-0 z-40 bg-dark-900/85 backdrop-blur-2xl border-b border-malla-600/20 px-4 sm:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4 transition-all shadow-lg shadow-black/40">
-        {/* Brand Logo & Title */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-malla-600 via-amber-600 to-malla-400 flex items-center justify-center text-white shadow-xl shadow-malla-900/60 hover:scale-105 transition-transform duration-300">
-            <Sparkles className="w-5 h-5 animate-pulse text-amber-200" />
-          </div>
-          <div>
-            <h1 className="text-lg font-black tracking-tight flex items-center gap-2">
-              <span className="text-gradient-malla">TubePilot</span>
-              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-malla-500/20 text-malla-200 font-extrabold border border-malla-400/30 shadow-sm">
-                AI PRO
-              </span>
-            </h1>
-          </div>
-        </div>
+      <header className="sticky top-0 z-40 bg-dark-900/85 backdrop-blur-2xl border-b border-malla-600/20 px-4 sm:px-8 py-3 flex flex-wrap items-center justify-between gap-4 transition-all shadow-lg shadow-black/40">
+        {/* Futuristic Quantum Play + Pilot Logo */}
+        <Link href={`/${locale}/dashboard`} className="transition-transform hover:scale-[1.02] active:scale-[0.98]">
+          <TubePilotLogo size="md" showText={true} />
+        </Link>
 
         {/* VidIQ-Style Connected Workspace Header Bar OR Prominent Connect Button */}
         {isChannelConnected && channel ? (

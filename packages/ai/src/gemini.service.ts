@@ -159,18 +159,6 @@ Task:
   }
 
   /**
-   * Conversational YouTube Creator & TubePilot Assistant (Optimized for ultra-fast response)
-   */
-  public static async askCreatorAssistant(
-    userQuery: string,
-    language: "uz" | "ru" | "en" = "uz"
-  ): Promise<string> {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error("GEMINI_API_KEY environment variable is not defined");
-    }
-
-  /**
    * Conversational YouTube Creator & TubePilot Assistant (Optimized for sub-second rapid response)
    */
   public static async askCreatorAssistant(
@@ -268,6 +256,6 @@ Task:
         "• **Muqova CTR:** Ob'yekt va fon kontrastini oshirib, CTR ko'rsatkichini 8%+ darajaga ko'taring.\n" +
         "• **Muntazamlik:** Tomoshabinlar faol bo'lgan eng qulay vaqtlarda video e'lon qiling.";
   }
-  }
 }
+
 

@@ -6,8 +6,9 @@
  */
 
 (function () {
-  const API_BASE_URL = 'http://localhost:3001';
-  const FALLBACK_API_URL = 'http://localhost:3000';
+  const API_BASE_URL = 'https://www.tubepilotpro.com';
+  const FALLBACK_API_URL = 'http://localhost:3001';
+  const LOCAL_DEV_URL = 'http://localhost:3000';
   const HUD_CONTAINER_ID = 'tubepilot-hud-root';
   const HEADER_HUD_CONTAINER_ID = 'tubepilot-header-hud-root';
 

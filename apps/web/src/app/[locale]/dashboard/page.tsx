@@ -13,6 +13,7 @@ import { PostingHeatmap } from '@/components/PostingHeatmap';
 import { CommentInbox } from '@/components/CommentInbox';
 import { ThumbnailStudio } from '@/components/ThumbnailStudio';
 import { ChannelAudit } from '@/components/ChannelAudit';
+import { AiTagGenerator } from '@/components/AiTagGenerator';
 import { YoutubeIcon as Youtube } from '@/components/YoutubeIcon';
 import {
   Users,
@@ -629,6 +630,9 @@ function DashboardContent() {
             showNotification(`Telegram paired with @${username || 'Tuble_Pilot_bot'}!`);
           }}
         />
+
+        {/* AI SEO & Viral Tag Generator Section */}
+        <AiTagGenerator />
 
         {/* VidIQ-Style Channel Audit & Growth Diagnostic */}
         <ChannelAudit

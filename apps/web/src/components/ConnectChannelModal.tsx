@@ -124,35 +124,78 @@ export function ConnectChannelModal({
                   });
                   onClose();
                 } else {
-                  alert("Kanal topilmadi. Qaytadan tekshirib ko'ring.");
+                  alert("Kanal topilmadi. Kanal nomi yoki @handle'ni tekshirib ko'ring (masalan: @TaoroGamesRu)");
                 }
               } catch (err) {
                 console.error("Direct channel connect error:", err);
+                alert("Ulanishda xatolik yuz berdi. Qaytadan urinib ko'ring.");
               } finally {
                 setLoading(false);
               }
             }}
-            className="space-y-2"
+            className="space-y-3"
           >
             <div className="flex gap-2">
               <input
                 name="channelQuery"
                 type="text"
+                required
+                defaultValue="@TaoroGamesRu"
                 placeholder="Kanal nomi yoki @handle (masalan: @TaoroGamesRu)..."
-                className="flex-1 px-4 py-3 rounded-2xl bg-dark-900 border border-dark-650 text-white placeholder-gray-500 text-xs sm:text-sm focus:outline-none focus:border-rose-500 transition-colors shadow-inner"
+                className="flex-1 px-4 py-3.5 rounded-2xl bg-dark-900 border border-dark-650 text-white placeholder-gray-500 text-xs sm:text-sm focus:outline-none focus:border-rose-500 transition-colors shadow-inner"
               />
               <button
                 type="submit"
                 disabled={loading}
-                className="px-5 py-3 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-rose-950/40 transition-all disabled:opacity-50 flex items-center gap-1.5"
+                className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-rose-950/40 transition-all disabled:opacity-50 flex items-center gap-1.5"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>Ulash</span>}
               </button>
             </div>
-            <p className="text-[11px] text-gray-400 text-left">
-              💡 Kanal nomingiz yoki havolasini kiriting — tizim 1 soniyada barcha tahlillarni yuklaydi.
-            </p>
+            <div className="flex items-center justify-between text-[11px] text-gray-400">
+              <span className="flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                Parolsiz xavfsiz ulanish
+              </span>
+              <span>1 soniyada tayyor</span>
+            </div>
           </form>
+
+          {/* Quick Connect suggestions */}
+          <div className="pt-2">
+            <p className="text-[11px] text-gray-500 text-left mb-2 font-medium">Tezkor namunalar:</p>
+            <div className="flex flex-wrap gap-1.5">
+              {['@TaoroGamesRu', '@kunuz', '@Subyektivist'].map((h) => (
+                <button
+                  key={h}
+                  type="button"
+                  disabled={loading}
+                  onClick={async () => {
+                    setLoading(true);
+                    try {
+                      const res = await fetch(`/api/channels/audit?q=${encodeURIComponent(h)}`);
+                      const data = await res.json();
+                      if (data.success && data.data) {
+                        onDemoConnect({
+                          title: data.data.channelTitle,
+                          subscribers: data.data.subscribers,
+                          views: data.data.totalViews,
+                          avatar: data.data.avatarUrl,
+                          handle: data.data.channelHandle,
+                        });
+                        onClose();
+                      }
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  className="px-2.5 py-1 rounded-xl bg-dark-750 hover:bg-dark-700 text-gray-300 hover:text-white border border-dark-650 text-[11px] transition-colors"
+                >
+                  {h}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Divider */}
           <div className="relative flex py-2 items-center">

@@ -37,26 +37,39 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'No YouTube channel found for this account' }, { status: 404 });
     }
 
+    let activeUserId = req.cookies.get('kanal_user_id')?.value;
+    let currentUser = activeUserId ? await prisma.user.findUnique({ where: { id: activeUserId } }) : null;
+
     try {
       const email = userInfo.data.email || `${channelItem.id}@youtube.placeholder`;
-      const user = await prisma.user.upsert({
+      
+      // If user had already clicked telegram pair in this browser, preserve their telegramChatId
+      const existingTgChatId = currentUser?.telegramChatId;
+      const existingTgUser = currentUser?.telegramUsername;
+
+      currentUser = await prisma.user.upsert({
         where: { email },
         create: {
           email,
           name: userInfo.data.name || channelItem.snippet?.title || 'Creator',
           avatarUrl: userInfo.data.picture || channelItem.snippet?.thumbnails?.default?.url,
+          telegramChatId: existingTgChatId || null,
+          telegramUsername: existingTgUser || null,
         },
         update: {
           name: userInfo.data.name || channelItem.snippet?.title,
           avatarUrl: userInfo.data.picture || channelItem.snippet?.thumbnails?.default?.url,
+          telegramChatId: existingTgChatId || undefined,
+          telegramUsername: existingTgUser || undefined,
         },
       });
+      activeUserId = currentUser.id;
 
       await prisma.youTubeChannel.upsert({
         where: { id: channelItem.id },
         create: {
           id: channelItem.id,
-          userId: user.id,
+          userId: activeUserId,
           title: channelItem.snippet?.title || 'My Channel',
           description: channelItem.snippet?.description,
           customUrl: channelItem.snippet?.customUrl || null,
@@ -70,6 +83,7 @@ export async function GET(req: NextRequest) {
           tokenScope: tokens.scope || '',
         },
         update: {
+          userId: activeUserId,
           title: channelItem.snippet?.title || undefined,
           customUrl: channelItem.snippet?.customUrl || undefined,
           thumbnailUrl: channelItem.snippet?.thumbnails?.high?.url || channelItem.snippet?.thumbnails?.default?.url || undefined,
@@ -98,37 +112,40 @@ export async function GET(req: NextRequest) {
     targetUrl.searchParams.set('ch_views', encodeURIComponent(channelData.views));
     targetUrl.searchParams.set('ch_avatar', encodeURIComponent(channelData.avatar));
 
-    // Send instant Telegram notification if bot token and user/channel exists
-    try {
-      const botToken = process.env.TELEGRAM_BOT_TOKEN || '8793624781:AAH50ARJWxJKAS2NTWaeC9ijPaiipTY73P4';
-      const pairedUser = await prisma.user.findFirst({
-        where: { telegramChatId: { not: null } },
-        orderBy: { updatedAt: 'desc' },
-      });
-
-      if (pairedUser?.telegramChatId) {
+    // Send instant Telegram notification to THIS SPECIFIC USER'S telegram bot
+    if (currentUser?.telegramChatId) {
+      try {
+        const botToken = process.env.TELEGRAM_BOT_TOKEN || '8793624781:AAH50ARJWxJKAS2NTWaeC9ijPaiipTY73P4';
         const msg =
-          `🚀 **TubePilot: Yangi YouTube Kanal Muvaffaqiyatli Ulandi!** 📺\n\n` +
+          `🚀 **TubePilot: Sizning YouTube Kanalingiz Muvaffaqiyatli Bog'landi!** 📺\n\n` +
           `📌 Kanal: **${channelData.title}** (${channelData.handle})\n` +
           `👥 Obunachilar: **${channelData.subscribers}**\n` +
           `👁️ Jami ko'rishlar: **${channelData.views}**\n\n` +
-          `🟢 Tizim faol: AI izohlar yordamchisi, teglash va video tahlillari sinxronlandi!`;
+          `✅ Endi har bir yangi video yuklanganda yoki tomoshalar oshganda sizga ushbu bot orqali tahlillar va maslahatlar kelib turadi!`;
 
         await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            chat_id: pairedUser.telegramChatId.toString(),
+            chat_id: currentUser.telegramChatId.toString(),
             text: msg,
             parse_mode: 'Markdown',
           }),
         });
+      } catch (tgNotifyErr) {
+        console.warn('[OAuth Callback] Telegram alert skipped:', tgNotifyErr);
       }
-    } catch (tgNotifyErr) {
-      console.warn('[OAuth Callback] Telegram alert skipped:', tgNotifyErr);
     }
 
     const response = NextResponse.redirect(targetUrl);
+    if (activeUserId) {
+      response.cookies.set('kanal_user_id', activeUserId, {
+        path: '/',
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 60 * 60 * 24 * 30,
+      });
+    }
     response.cookies.set('tubepilot_google_connected', 'true', {
       path: '/',
       maxAge: 60 * 60 * 24 * 30,

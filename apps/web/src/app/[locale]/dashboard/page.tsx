@@ -321,15 +321,15 @@ function DashboardContent() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-950 text-gray-100 relative overflow-hidden selection:bg-rose-500 selection:text-white">
-      {/* Dynamic Animated Ambient Background Glows */}
-      <div className="fixed top-[-10%] left-[-10%] w-[55vw] h-[55vw] bg-rose-600/15 rounded-full blur-[140px] pointer-events-none animate-float-slow -z-10" />
-      <div className="fixed bottom-[-15%] right-[-10%] w-[60vw] h-[60vw] bg-purple-600/12 rounded-full blur-[160px] pointer-events-none animate-float-delayed -z-10" />
-      <div className="fixed top-[35%] right-[20%] w-[35vw] h-[35vw] bg-sky-600/10 rounded-full blur-[130px] pointer-events-none animate-pulse-slow -z-10" />
+    <div className="min-h-screen bg-dark-950 text-slate-100 relative overflow-hidden selection:bg-malla-500 selection:text-white">
+      {/* Dynamic Animated Ambient Background Glows - Malla & Slate Grey */}
+      <div className="fixed top-[-15%] left-[-10%] w-[60vw] h-[60vw] bg-malla-600/20 rounded-full blur-[150px] pointer-events-none animate-float-slow -z-10" />
+      <div className="fixed bottom-[-15%] right-[-10%] w-[65vw] h-[65vw] bg-malla-500/18 rounded-full blur-[170px] pointer-events-none animate-float-delayed -z-10" />
+      <div className="fixed top-[40%] right-[25%] w-[40vw] h-[40vw] bg-slate-600/15 rounded-full blur-[140px] pointer-events-none animate-pulse-slow -z-10" />
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 animate-bounceIn flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold text-xs shadow-2xl shadow-emerald-950/60 border border-emerald-400/30">
+        <div className="fixed bottom-6 right-6 z-50 animate-bounceIn flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-gradient-to-r from-malla-600 to-amber-700 text-white font-semibold text-xs shadow-2xl shadow-malla-900/60 border border-malla-400/40">
           <Check className="w-4 h-4 flex-shrink-0" />
           <span>{toastMessage}</span>
           <button onClick={() => setToastMessage(null)} className="ml-2 hover:opacity-80">
@@ -338,17 +338,17 @@ function DashboardContent() {
         </div>
       )}
 
-      {/* Top Navigation - Ultra Glassmorphic */}
-      <header className="sticky top-0 z-40 bg-dark-950/80 backdrop-blur-2xl border-b border-white/5 px-4 sm:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4 transition-all">
+      {/* Top Navigation - Ultra Glassmorphic Malla & Slate */}
+      <header className="sticky top-0 z-40 bg-dark-900/85 backdrop-blur-2xl border-b border-malla-600/20 px-4 sm:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4 transition-all shadow-lg shadow-black/40">
         {/* Brand Logo & Title */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-600 via-pink-600 to-purple-600 flex items-center justify-center text-white shadow-xl shadow-rose-950/50 hover:scale-105 transition-transform duration-300">
-            <Sparkles className="w-5 h-5 animate-pulse" />
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-malla-600 via-amber-600 to-malla-400 flex items-center justify-center text-white shadow-xl shadow-malla-900/60 hover:scale-105 transition-transform duration-300">
+            <Sparkles className="w-5 h-5 animate-pulse text-amber-200" />
           </div>
           <div>
             <h1 className="text-lg font-black tracking-tight flex items-center gap-2">
-              <span className="text-gradient">TubePilot</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-rose-500/20 to-purple-500/20 text-rose-300 font-extrabold border border-rose-500/30 shadow-sm">
+              <span className="text-gradient-malla">TubePilot</span>
+              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-malla-500/20 text-malla-200 font-extrabold border border-malla-400/30 shadow-sm">
                 AI PRO
               </span>
             </h1>
@@ -505,16 +505,16 @@ function DashboardContent() {
             </div>
           </div>
         ) : (
-          <div className="p-8 sm:p-10 rounded-3xl glass-panel-glow relative overflow-hidden group">
-            {/* Ambient neon radial glows */}
-            <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-gradient-to-br from-rose-500/20 via-pink-500/10 to-transparent rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-700" />
-            <div className="absolute -bottom-10 -left-10 w-80 h-80 bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="p-8 sm:p-10 rounded-3xl glass-panel-glow relative overflow-hidden group border border-malla-500/30">
+            {/* Ambient neon radial glows - Malla & Slate */}
+            <div className="absolute top-0 right-0 w-[480px] h-[480px] bg-gradient-to-br from-malla-500/25 via-amber-600/15 to-transparent rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-700" />
+            <div className="absolute -bottom-10 -left-10 w-80 h-80 bg-slate-600/20 rounded-full blur-3xl pointer-events-none" />
 
             <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
-                <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-rose-600 via-pink-600 to-purple-600 p-0.5 shadow-2xl shadow-rose-950/60 flex-shrink-0 group-hover:rotate-3 transition-transform duration-500">
-                  <div className="w-full h-full bg-dark-950 rounded-[22px] flex items-center justify-center text-white">
-                    <Youtube className="w-10 h-10 text-rose-500 animate-pulse" />
+                <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-malla-600 via-amber-600 to-malla-400 p-0.5 shadow-2xl shadow-malla-950/70 flex-shrink-0 group-hover:rotate-3 transition-transform duration-500">
+                  <div className="w-full h-full bg-dark-900 rounded-[22px] flex items-center justify-center text-white">
+                    <Youtube className="w-10 h-10 text-malla-400 animate-pulse" />
                   </div>
                 </div>
 
@@ -523,20 +523,20 @@ function DashboardContent() {
                     <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
                       YouTube Kanalingizni Bog&apos;lang
                     </h3>
-                    <span className="px-3 py-1 rounded-full bg-rose-500/15 text-rose-300 font-extrabold text-[11px] border border-rose-500/30 uppercase tracking-widest">
+                    <span className="px-3 py-1 rounded-full bg-malla-500/20 text-malla-300 font-extrabold text-[11px] border border-malla-400/40 uppercase tracking-widest shadow-sm">
                       1-Bosishda
                     </span>
                   </div>
-                  <p className="text-sm text-gray-300 max-w-xl leading-relaxed">
+                  <p className="text-sm text-slate-300 max-w-xl leading-relaxed">
                     Kanal statistikangizni real vaqtda kuzating, sun&apos;iy intellekt orqali virusli teglarni oling va video ko&apos;rishlar oqimini 10 barobarga oshiring.
                   </p>
-                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs text-gray-400 pt-1">
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs text-slate-400 pt-1">
                     <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
                       <ShieldCheck className="w-4 h-4" />
                       Google Verified API
                     </span>
                     <span>•</span>
-                    <span className="flex items-center gap-1.5 text-sky-400 font-bold">
+                    <span className="flex items-center gap-1.5 text-malla-300 font-bold">
                       <Sparkles className="w-4 h-4" />
                       Gemini Vision Tahlili
                     </span>
@@ -546,7 +546,7 @@ function DashboardContent() {
 
               <button
                 onClick={() => setShowConnectModal(true)}
-                className="w-full lg:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-rose-600 via-pink-600 to-rose-600 hover:from-rose-500 hover:to-pink-500 text-white font-black text-sm sm:text-base transition-all shadow-2xl shadow-rose-950/70 hover:shadow-rose-900/90 hover:scale-105 active:scale-95 flex items-center justify-center gap-3 border border-rose-400/40 flex-shrink-0"
+                className="w-full lg:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-malla-600 via-amber-600 to-malla-500 hover:from-malla-500 hover:to-amber-500 text-white font-black text-sm sm:text-base transition-all shadow-2xl shadow-malla-950/80 hover:shadow-malla-800/90 hover:scale-105 active:scale-95 flex items-center justify-center gap-3 border border-malla-400/50 flex-shrink-0"
               >
                 <Youtube className="w-5 h-5 fill-white" />
                 <span>+ YouTube Kanalni Ulash</span>
@@ -558,32 +558,32 @@ function DashboardContent() {
         {/* Creator Header Stats - Ultra Modern Glass Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {/* Card 1: Channel Overview */}
-          <div className="glass-panel p-6 rounded-3xl hover:border-rose-500/30 transition-all duration-300 hover:-translate-y-1 shadow-xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl group-hover:bg-rose-500/20 transition-all" />
+          <div className="glass-panel p-6 rounded-3xl hover:border-malla-400/40 transition-all duration-300 hover:-translate-y-1 shadow-xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-28 h-28 bg-malla-500/10 rounded-full blur-2xl group-hover:bg-malla-500/25 transition-all" />
             <div className="flex items-center gap-4 relative z-10">
               {isChannelConnected && channel ? (
                 <img
                   src={channel.avatar}
                   alt="Channel Avatar"
-                  className="w-14 h-14 rounded-2xl object-cover ring-2 ring-rose-500/40 shadow-lg shadow-rose-950/40 flex-shrink-0 group-hover:scale-105 transition-transform"
+                  className="w-14 h-14 rounded-2xl object-cover ring-2 ring-malla-400/50 shadow-lg shadow-malla-950/50 flex-shrink-0 group-hover:scale-105 transition-transform"
                 />
               ) : (
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-600/20 to-pink-600/20 border border-rose-500/30 flex items-center justify-center text-rose-400 flex-shrink-0 group-hover:scale-105 transition-transform">
-                  <Youtube className="w-7 h-7" />
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-malla-600/30 via-amber-600/20 to-slate-700/30 border border-malla-500/30 flex items-center justify-center text-malla-300 flex-shrink-0 group-hover:scale-105 transition-transform shadow-inner">
+                  <Youtube className="w-7 h-7 text-malla-400" />
                 </div>
               )}
               <div className="overflow-hidden">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">{tDash('welcome')}</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{tDash('welcome')}</p>
                 <h2 className="text-base font-black text-white truncate flex items-center gap-1.5 mt-0.5">
                   <span className="truncate">{isChannelConnected && channel ? channel.title : tDash('noChannelConnected')}</span>
                   {isChannelConnected && <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />}
                 </h2>
                 {isChannelConnected && channel?.handle ? (
-                  <p className="text-xs text-rose-400 font-bold truncate mt-0.5">{channel.handle}</p>
+                  <p className="text-xs text-malla-400 font-bold truncate mt-0.5">{channel.handle}</p>
                 ) : (
                   <button
                     onClick={() => setShowConnectModal(true)}
-                    className="text-xs text-rose-400 font-bold hover:text-rose-300 flex items-center gap-1 mt-1 transition-colors"
+                    className="text-xs text-malla-400 font-bold hover:text-malla-300 flex items-center gap-1 mt-1 transition-colors"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Kanalni ulash</span>
@@ -594,12 +594,12 @@ function DashboardContent() {
           </div>
 
           {/* Card 2: Subscribers */}
-          <div className="glass-panel p-6 rounded-3xl hover:border-rose-500/30 transition-all duration-300 hover:-translate-y-1 shadow-xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl group-hover:bg-rose-500/20 transition-all" />
+          <div className="glass-panel p-6 rounded-3xl hover:border-malla-400/40 transition-all duration-300 hover:-translate-y-1 shadow-xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-28 h-28 bg-malla-500/10 rounded-full blur-2xl group-hover:bg-malla-500/25 transition-all" />
             <div className="flex items-center justify-between mb-3 relative z-10">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">{tDash('subscribers')}</span>
-              <div className="w-10 h-10 rounded-2xl bg-rose-500/15 text-rose-400 flex items-center justify-center border border-rose-500/30 group-hover:scale-110 transition-transform">
-                <Users className="w-5 h-5" />
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{tDash('subscribers')}</span>
+              <div className="w-10 h-10 rounded-2xl bg-malla-500/15 text-malla-300 flex items-center justify-center border border-malla-400/30 group-hover:scale-110 transition-transform">
+                <Users className="w-5 h-5 text-malla-300" />
               </div>
             </div>
             <div className="relative z-10 flex items-baseline justify-between">
@@ -615,12 +615,12 @@ function DashboardContent() {
           </div>
 
           {/* Card 3: Total Views */}
-          <div className="glass-panel p-6 rounded-3xl hover:border-sky-500/30 transition-all duration-300 hover:-translate-y-1 shadow-xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/10 rounded-full blur-2xl group-hover:bg-sky-500/20 transition-all" />
+          <div className="glass-panel p-6 rounded-3xl hover:border-slate-500/40 transition-all duration-300 hover:-translate-y-1 shadow-xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-28 h-28 bg-slate-500/10 rounded-full blur-2xl group-hover:bg-slate-500/25 transition-all" />
             <div className="flex items-center justify-between mb-3 relative z-10">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">{tDash('totalViews')}</span>
-              <div className="w-10 h-10 rounded-2xl bg-sky-500/15 text-sky-400 flex items-center justify-center border border-sky-500/30 group-hover:scale-110 transition-transform">
-                <Eye className="w-5 h-5" />
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{tDash('totalViews')}</span>
+              <div className="w-10 h-10 rounded-2xl bg-slate-600/20 text-slate-300 flex items-center justify-center border border-slate-500/30 group-hover:scale-110 transition-transform">
+                <Eye className="w-5 h-5 text-slate-300" />
               </div>
             </div>
             <div className="relative z-10 flex items-baseline justify-between">
@@ -628,7 +628,7 @@ function DashboardContent() {
                 {isChannelConnected && channel ? channel.views : '—'}
               </h3>
               {isChannelConnected && (
-                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30">
+                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-malla-500/15 text-malla-300 border border-malla-400/30">
                   Real vaqt
                 </span>
               )}
@@ -636,16 +636,16 @@ function DashboardContent() {
           </div>
 
           {/* Card 4: AI Predicted CTR */}
-          <div className="glass-panel p-6 rounded-3xl hover:border-emerald-500/30 transition-all duration-300 hover:-translate-y-1 shadow-xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all" />
+          <div className="glass-panel p-6 rounded-3xl hover:border-malla-400/40 transition-all duration-300 hover:-translate-y-1 shadow-xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-28 h-28 bg-malla-500/10 rounded-full blur-2xl group-hover:bg-malla-500/25 transition-all" />
             <div className="flex items-center justify-between mb-3 relative z-10">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">{tDash('avgCtr')}</span>
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center border border-emerald-500/30 group-hover:scale-110 transition-transform">
-                <Sparkles className="w-5 h-5" />
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{tDash('avgCtr')}</span>
+              <div className="w-10 h-10 rounded-2xl bg-malla-500/15 text-malla-300 flex items-center justify-center border border-malla-400/30 group-hover:scale-110 transition-transform">
+                <Sparkles className="w-5 h-5 text-malla-300" />
               </div>
             </div>
             <div className="relative z-10 flex items-baseline justify-between">
-              <h3 className="text-2xl font-black text-emerald-400 tracking-tight">
+              <h3 className="text-2xl font-black text-amber-300 tracking-tight">
                 {isChannelConnected ? '88.6%' : '—'}
               </h3>
               <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">

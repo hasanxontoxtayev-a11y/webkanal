@@ -98,8 +98,8 @@ export function ChannelAudit({
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
         <div>
           <div className="flex items-center gap-2.5 mb-2">
-            <span className="px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-gradient-to-r from-rose-500/20 to-pink-500/20 text-rose-400 border border-rose-500/30 flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-rose-400" />
+            <span className="px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase bg-malla-500/20 text-malla-300 border border-malla-400/30 flex items-center gap-1.5 shadow-sm">
+              <Zap className="w-3.5 h-3.5 text-malla-400" />
               VidIQ-Style Growth Engine
             </span>
             <TelegramHelpButton featureKey="overview" label="Audit in Telegram" />
@@ -111,44 +111,44 @@ export function ChannelAudit({
                 }
                 setShowCompetitorSpy(!showCompetitorSpy);
               }}
-              className={`px-3 py-1 rounded-full text-xs font-bold transition-all border flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border flex items-center gap-1.5 ${
                 showCompetitorSpy
-                  ? 'bg-rose-600 text-white border-rose-500 shadow-md shadow-rose-900/40'
-                  : 'bg-dark-900 text-gray-300 hover:text-white border-dark-600'
+                  ? 'bg-gradient-to-r from-malla-600 to-amber-600 text-white border-malla-400/50 shadow-md shadow-malla-950/40'
+                  : 'bg-dark-900 text-slate-300 hover:text-white border-slate-700/80 hover:border-malla-400/40'
               }`}
             >
-              <Flame className="w-3.5 h-3.5 text-rose-400" />
+              <Flame className="w-3.5 h-3.5 text-malla-400" />
               <span>{showCompetitorSpy ? 'Hide Competitor Spy' : '⚔️ Competitor Spy & Compare'}</span>
               {subscriptionTier === 'FREE' && (
-                <span className="px-1.5 py-0.2 text-[9px] bg-purple-500/30 text-purple-300 rounded font-bold border border-purple-500/40">
+                <span className="px-1.5 py-0.2 text-[9px] bg-amber-500/30 text-amber-300 rounded font-bold border border-amber-500/40">
                   PRO
                 </span>
               )}
             </button>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            YouTube Channel Audit <span className="text-rose-500">& Diagnostic</span>
+          <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2">
+            YouTube Channel Audit <span className="text-gradient-malla">&amp; Diagnostic</span>
           </h2>
-          <p className="text-xs sm:text-sm text-gray-400 mt-1 max-w-xl">
-            Live algorithmic audit calculating VPH velocity, estimated RPM earnings, video SEO health, and thumbnail clickability.
+          <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
+            Real vaqt tahlili: VPH tezligi, kutilayotgan daromad (RPM), video SEO holati va muqova (thumbnail) jozibadorligi.
           </p>
         </div>
 
         {/* Search Bar Form */}
         <form onSubmit={handleSearch} className="flex-1 max-w-md w-full">
           <div className="relative flex items-center">
-            <Search className="w-4 h-4 text-gray-400 absolute left-4 pointer-events-none" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-4 pointer-events-none" />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search ANY channel globally (e.g. Subyektiv, Kun.uz, @MKBHD, @MrBeast)..."
-              className="w-full pl-11 pr-28 py-3 rounded-2xl bg-dark-900 border border-dark-600 text-white placeholder-gray-500 text-xs sm:text-sm focus:outline-none focus:border-rose-500 transition-colors shadow-inner"
+              placeholder="Istalgan YouTube kanalini qidiring (masalan: Subyektiv, Kun.uz, @MKBHD)..."
+              className="w-full pl-11 pr-28 py-3 rounded-2xl bg-dark-900 border border-slate-700/80 text-white placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:border-malla-400 transition-colors shadow-inner"
             />
             <button
               type="submit"
               disabled={loading}
-              className="absolute right-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white text-xs font-bold transition-all shadow-md shadow-rose-900/30 disabled:opacity-50 flex items-center gap-1.5"
+              className="absolute right-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-malla-600 via-amber-600 to-malla-500 hover:from-malla-500 hover:to-amber-500 text-white text-xs font-black transition-all shadow-md shadow-malla-950/40 disabled:opacity-50 flex items-center gap-1.5 hover:scale-[1.02] active:scale-[0.98]"
             >
               {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
               <span>Audit</span>
@@ -157,16 +157,16 @@ export function ChannelAudit({
 
           {/* Quick preset chips */}
           <div className="flex items-center gap-2 mt-2.5 overflow-x-auto pb-1 text-xs">
-            <span className="text-gray-500 text-[11px] font-semibold">Presets:</span>
+            <span className="text-slate-400 text-[11px] font-bold">Misollar:</span>
             {['@kunuz_official', 'Subyektiv', 'Daryo', '@MKBHD', '@MrBeast'].map((preset) => (
               <button
                 key={preset}
                 type="button"
                 onClick={() => handlePreset(preset)}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
                   query === preset
-                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                    : 'bg-dark-900 text-gray-400 hover:text-gray-200 border border-dark-700'
+                    ? 'bg-malla-500/25 text-malla-200 border border-malla-400/40 shadow-sm'
+                    : 'bg-dark-900 text-slate-400 hover:text-slate-200 border border-slate-700/80'
                 }`}
               >
                 {preset}

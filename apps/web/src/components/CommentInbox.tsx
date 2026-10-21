@@ -40,41 +40,41 @@ export function CommentInbox({ connectedChannelTitle = 'YouTube Kanali', connect
   const [filterMode, setFilterMode] = useState<'ALL' | 'UNANSWERED' | 'APPROVED'>('ALL');
 
   const generateChannelComments = (title: string, handle: string): CommentItem[] => {
-    const isMusicOrMedia = title.toLowerCase().includes('velora') || title.toLowerCase().includes('music') || title.toLowerCase().includes('media');
-    
-    if (isMusicOrMedia) {
+    const isVelora = title.toLowerCase().includes('velora') || handle.toLowerCase().includes('velora');
+
+    if (isVelora) {
       return [
         {
           id: 'vc_1',
-          authorDisplayName: 'Nodirbek Qodirov',
-          originalText: `${title} treklarini har kuni tinglayman! Bu musiqaning WAV sifatini qayerdan yuklab olsam bo'ladi? Yana shunaqa relizlar kutyapmiz! 🔥`,
+          authorDisplayName: 'Farrux Zokirov',
+          originalText: `Yolg'on Dunyo taronasidagi ayol vokali va bass qismi yurakka yetib boradi. Trekning to'liq 320kbps formatini qayerdan yuklab olsak bo'ladi?`,
           detectedLanguage: 'Uzbek',
-          aiDraftReply: `Assalomu alaykum Nodirbek! Qo'llab-quvvatlaganingiz uchun katta rahmat! Barcha treklarning to'liq va yuqori sifati tavsifdagi Spotify va Telegram kanalda bor. Tez orada yangi reliz chiqadi! 🚀`,
-          videoTitle: `${title} - Official Release 2026`,
+          aiDraftReply: `Assalomu alaykum Farruxbek! Fikringiz uchun samimiy minnatdormiz! Trekning to'liq va original sifati tavsifdagi rasmiy havola va Telegram kanalimizda joylangan. Qo'llab-quvvatlaganingiz uchun rahmat! 🎧`,
+          videoTitle: `Yolg'on Dunyo (Kim do'st, kim begona)  AI MUSIC  VELORA`,
         },
         {
           id: 'vc_2',
-          authorDisplayName: 'Elena Petrova',
-          originalText: `Потрясающая атмосфера и продакшн трека! Подскажите, будет ли расширенная 1-часовая версия для работы и фокуса?`,
-          detectedLanguage: 'Russian',
-          aiDraftReply: `Привет, Елена! Огромное спасибо за теплый отзыв! Да, 1-часовой extended mix для фокуса уже на финальном сведении, выпустим на этой неделе! 👍`,
-          videoTitle: `${title} - Deep Focus Vibes`,
+          authorDisplayName: 'Madina Karimova',
+          originalText: `Sevasanmi taronasidagi mayin ovoz va lirik ma'no juda ta'sirli chiqibdi! Aynan shu uslubda yana yangi qo'shiqlar chiqaringlar, kutib qolamiz! ❤️`,
+          detectedLanguage: 'Uzbek',
+          aiDraftReply: `Assalomu alaykum Madina! E'tiboringiz va iliq fikrlaringiz uchun katta rahmat! Aynan shu kabi samimiy va mayin musiqalar ustida yangi relizlar tayyorlayapmiz, kuzatib boring! ✨`,
+          videoTitle: `"SEVASANMI" – Sevgi savoli... (Mayin ovoz va zamonaviy o'zbekona uslub)  AI MUSIC`,
         },
         {
           id: 'vc_3',
-          authorDisplayName: 'Dave Miller',
-          originalText: `This sound design is unreal! Can creators use this track in YouTube background videos without copyright claims?`,
-          detectedLanguage: 'English',
-          aiDraftReply: `Hey Dave! Absolutely, you're free to use it as background audio as long as you credit ${title} in the description! Thanks for the love! 🔥`,
-          videoTitle: `${title} - Studio Master Breakdown`,
+          authorDisplayName: 'Shohruh Rahimov',
+          originalText: `Qalb Sadolari trekidagi etnik ohanglar va ritm ajoyib uyg'unlashgan. Bu musiqani YouTube Shorts va Reels videolarimda ishlatsam bo'ladimi?`,
+          detectedLanguage: 'Uzbek',
+          aiDraftReply: `Salom Shohruh! Albatta, videolaringizda fon musiqasi sifatida bemalol foydalanishingiz mumkin, faqat tavsifda VELORA kanaliga havola qoldirib qo'ysangiz kifoya! Ijodga omad! 🔥`,
+          videoTitle: `DUNYO — Qalb Sadolari va Cheksiz Parvoz (Epik Etnik Qo‘shiq) VELORA AI MUSIC`,
         },
         {
           id: 'vc_4',
-          authorDisplayName: 'Jasur Temirov',
-          originalText: `Shorts videongizdagi montaj va ovoz effektlari juda zo'r chiqibdi. Keyingi darslik qachon chiqadi?`,
+          authorDisplayName: 'Ulug\'bek Aliyev',
+          originalText: `Sani Sog'indim Jonim qo'shig'idagi bass va erkak ovozi sof o'zbekcha rap kayfiyatini beribdi. Yangi treklar kutamiz!`,
           detectedLanguage: 'Uzbek',
-          aiDraftReply: `Rahmat Jasurbek! Keyingi qism dushanba kuni soat 19:00 da chiqadi, qo'ng'iroqchani yoqib qo'ying! 🔔`,
-          videoTitle: `${title} - Viral Shorts Teaser`,
+          aiDraftReply: `Katta rahmat Ulug'bek! Har bir qo'shiqda yurakdan his qilinadigan his-tuyg'ularni berishga harakat qilyapmiz. Tez orada yangi premyera chiqadi! 🎵`,
+          videoTitle: `Sani Sog‘indim Jonim — Yurakdagi Xotiralar  AI MUSIC`,
         },
       ];
     }
@@ -103,14 +103,6 @@ export function CommentInbox({ connectedChannelTitle = 'YouTube Kanali', connect
         detectedLanguage: 'English',
         aiDraftReply: `Thanks Marcus! This one took about 18 hours between DaVinci Resolve grading and pacing cuts. Really glad you enjoyed the cinematic feel! 🔥`,
         videoTitle: `${title}: Complete Studio Breakdown`,
-      },
-      {
-        id: 'c4',
-        authorDisplayName: 'Diyorbek Yusupov',
-        originalText: `Ushbu mavzu bo'yicha ko'p joydan ma'lumot izlagandim, eng aniq va tushunarli sizda bo'libdi. Kanalga omad!`,
-        detectedLanguage: 'Uzbek',
-        aiDraftReply: `Katta rahmat Diyorbek! Har doim amaliy va sifatli kontent tayyorlashga harakat qilamiz. Kuzatishda davom eting! 👍`,
-        videoTitle: `${title}: Asosiy Strategiya`,
       },
     ];
   };

@@ -11,27 +11,57 @@ export async function POST(req: NextRequest) {
     const name = authorName || 'Do\'stim';
     let draft = '';
 
-    if (language === 'uz') {
-      const templates = [
-        `Assalomu alaykum ${name}! Fikringiz va iliq so'zlaringiz uchun katta rahmat! Aynan siz aytgan mavzuda yangi video ustida ishlayapmiz, kuzatib boring! 🚀`,
-        `Rahmat ${name}! Qiziqishingizdan juda xursandman. Savolingiz bo'yicha tez orada batafsil video-darslik tayyorlaymiz! 👍`,
-        `Katta rahmat ${name}! Kanaldagi yangiliklarni o'tkazib yubormaslik uchun qo'ng'iroqchani yoqib qo'ying, oldinda juda qiziq kontent kutmoqda! 🔥`,
-      ];
-      draft = templates[Math.floor(Math.random() * templates.length)];
-    } else if (language === 'ru') {
-      const templates = [
-        `Привет, ${name}! Огромное спасибо за поддержку и отличный комментарий! Очень рад, что ролик оказался полезным. Скоро выпустим вторую часть! 🚀`,
-        `Спасибо за отзыв, ${name}! Отличный вопрос — как раз готовим разбор этой темы в следующем выпуске. Оставайтесь на связи! 👍`,
-        `Благодарю, ${name}! Очень ценю обратную связь от аудитории. Не забудьте подписаться с колокольчиком, впереди много крутого контента! 🔥`,
-      ];
-      draft = templates[Math.floor(Math.random() * templates.length)];
-    } else {
-      const templates = [
-        `Hey ${name}! Thanks so much for watching and for your awesome feedback! We're already working on a follow-up video diving deeper into this topic. Stay tuned! 🚀`,
-        `Really appreciate your comment, ${name}! Great question — I'll cover this thoroughly in an upcoming studio breakdown. Thanks for supporting the channel! 👍`,
-        `Thanks a lot, ${name}! Your feedback means the world to our team. Make sure notifications are turned on, exciting uploads coming next week! 🔥`,
-      ];
-      draft = templates[Math.floor(Math.random() * templates.length)];
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (apiKey) {
+      try {
+        const langName = language === 'ru' ? 'Russian' : language === 'en' ? 'English' : 'Uzbek';
+        const prompt = `You are YouTube creator ${channelTitle}. Reply to this viewer comment kindly and authentically in ${langName}:
+Viewer Name: "${name}"
+Comment: "${commentText}"
+
+Reply rules:
+1. Address them by name.
+2. Thank them warmly and respond directly to their specific point.
+3. Keep it within 1-2 friendly sentences.
+4. Add 1 appropriate emoji.`;
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: { maxOutputTokens: 150, temperature: 0.7 },
+            }),
+          }
+        );
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const json = await res.json();
+          const text = json?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) {
+            draft = text.trim();
+          }
+        }
+      } catch (geminiErr) {
+        console.warn('Gemini comment generation error, using smart fallback');
+      }
+    }
+
+    if (!draft) {
+      if (language === 'uz') {
+        draft = `Assalomu alaykum ${name}! Fikringiz uchun katta rahmat! Aynan shu mavzuda yangi video ustida ishlayapmiz, kuzatib boring! 🚀`;
+      } else if (language === 'ru') {
+        draft = `Привет, ${name}! Огромное спасибо за поддержку и отзыв! Очень приятно читать такие комментарии. Оставайтесь на связи! 👍`;
+      } else {
+        draft = `Hey ${name}! Thanks so much for watching and for your awesome feedback! More exciting uploads coming soon. Stay tuned! 🚀`;
+      }
     }
 
     return NextResponse.json({

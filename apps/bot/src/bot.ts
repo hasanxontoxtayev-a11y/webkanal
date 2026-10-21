@@ -793,15 +793,20 @@ bot.on("message:text", async (ctx) => {
 
   try {
     const geminiReply = await GeminiService.askCreatorAssistant(text, lang);
-    await ctx.reply(geminiReply, { parse_mode: "Markdown" });
+    try {
+      await ctx.reply(geminiReply, { parse_mode: "Markdown" });
+    } catch (parseErr) {
+      // If Telegram Markdown fails on unclosed asterisks or quotes, send plain text cleanly!
+      await ctx.reply(geminiReply);
+    }
   } catch (err: any) {
     console.error("Gemini conversation error:", err);
     const fallbackResponse =
       lang === "ru"
-        ? `💡 **TubePilot AI Эксперт:**\n\nYouTube по вашему вопросу: "${text}". Для стабильного роста удерживайте внимание зрителей в первые 30 секунд и используйте кликабельные контрастные обложки (CTR 8%+).`
-        : `💡 **TubePilot AI Ekspert:**\n\nSizning savolingiz: "${text}". YouTube'da muvaffaqiyat uchun videoning dastlabki 30 soniyasida tomoshabin diqqatini ushlab qoling va yuqori kontrastli muqovalardan (CTR 8%+) foydalaning!`;
+        ? `💡 TubePilot AI Эксперт:\n\nYouTube по вашему вопросу: "${text}". Для стабильного роста удерживайте внимание зрителей в первые 30 секунд и используйте кликабельные контрастные обложки (CTR 8%+).`
+        : `💡 TubePilot AI Ekspert:\n\nSizning savolingiz: "${text}". YouTube'da muvaffaqiyat uchun videoning dastlabki 30 soniyasida tomoshabin diqqatini ushlab qoling va yuqori kontrastli muqovalardan (CTR 8%+) foydalaning!`;
 
-    await ctx.reply(fallbackResponse, { parse_mode: "Markdown" });
+    await ctx.reply(fallbackResponse);
   }
 });
 

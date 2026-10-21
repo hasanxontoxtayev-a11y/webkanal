@@ -5,15 +5,11 @@
   "description": "Universal VidIQ-grade YouTube HUD, real-time views velocity (VPH), localized RPM earnings calculator, SEO diagnostic, and YouTube Studio AI companion.",
   "permissions": [
     "storage",
-    "activeTab"
+    "activeTab",
+    "scripting"
   ],
   "host_permissions": [
-    "*://*.youtube.com/*",
-    "*://youtube.com/*",
-    "https://www.tubepilotpro.com/*",
-    "https://tubepilotpro.com/*",
-    "http://localhost:3001/*",
-    "http://localhost:3000/*"
+    "<all_urls>"
   ],
   "action": {
     "default_popup": "popup.html",

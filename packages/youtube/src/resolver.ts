@@ -231,12 +231,13 @@ export async function resolveYouTubeChannel(rawQuery: string): Promise<ChannelAu
     const aboutModels = findRecursiveKeys(aboutData, 'aboutChannelViewModel');
     const aboutModel = aboutModels[0] || {};
 
-    // Extract Title
+    // Extract Title (Prioritize og:title or Search title so handle is not used as title)
     const ogTitleMatch = combinedHtml.match(/<meta property="og:title" content="([^"]+)"/);
+    const rawOgTitle = ogTitleMatch?.[1]?.trim();
     const channelTitle =
-      aboutModel.canonicalChannelUrl?.split('/@')?.[1] ||
+      (rawOgTitle && !rawOgTitle.startsWith('@') ? rawOgTitle : null) ||
       searchChannelInfo.title ||
-      ogTitleMatch?.[1] ||
+      aboutModel.canonicalChannelUrl?.split('/@')?.[1] ||
       query.replace(/^[@\s]+/, '');
 
     // Extract Handle
@@ -266,18 +267,18 @@ export async function resolveYouTubeChannel(rawQuery: string): Promise<ChannelAu
       aboutModel.subscriberCountText ||
       searchChannelInfo.subscribersText ||
       combinedHtml.match(/"subscriberCountText":\{"simpleText":"([^"]+)"\}/)?.[1] ||
-      '140K subscribers';
+      '0 subscribers';
 
     const totalViewsRaw =
       aboutModel.viewCountText ||
       combinedHtml.match(/"viewCountText":\{"simpleText":"([^"]+)"\}/)?.[1] ||
-      '12,800,000 views';
+      '0 views';
 
     const videoCountRaw =
       aboutModel.videoCountText ||
       searchChannelInfo.videoCountText ||
       combinedHtml.match(/"videoCountText":\{"runs":\[\{"text":"([^"]+)"\}\]\}/)?.[1] ||
-      '84 videos';
+      '0 videos';
 
     const cleanSubscribers = subscribersRaw.replace(/subscribers?/i, '').trim();
     const cleanTotalViews = totalViewsRaw.replace(/views?/i, '').trim();
@@ -310,7 +311,7 @@ export async function resolveYouTubeChannel(rawQuery: string): Promise<ChannelAu
         }
       }
 
-      let views = '15K views';
+      let views = '0 views';
       let timeAgo = 'Recent';
 
       for (const part of allParts) {
@@ -322,7 +323,7 @@ export async function resolveYouTubeChannel(rawQuery: string): Promise<ChannelAu
       }
 
       // If views wasn't identified by keywords, pick the first numeric part that isn't a timestamp
-      if (views === '15K views' && allParts.length > 0) {
+      if (views === '0 views' && allParts.length > 0) {
         const numericPart = allParts.find((p) => /\d/.test(p) && !/(ago|streamed|oldin|назад)/i.test(p));
         if (numericPart) views = numericPart;
       }
@@ -343,9 +344,9 @@ export async function resolveYouTubeChannel(rawQuery: string): Promise<ChannelAu
     }
 
     // 4. Calculate VidIQ Metrics based on Real Extracted Data
-    const subNum = Math.max(parseNumber(cleanSubscribers), 10000);
-    const viewsNum = Math.max(parseNumber(cleanTotalViews), subNum * 12);
-    const videoNum = Math.max(parseNumber(cleanVideoCount), parsedVideos.length || 10);
+    const subNum = parseNumber(cleanSubscribers);
+    const viewsNum = parseNumber(cleanTotalViews);
+    const videoNum = Math.max(parseNumber(cleanVideoCount), parsedVideos.length);
 
     // Compute VPH from latest video
     const latestVideo = parsedVideos[0];
@@ -361,11 +362,11 @@ export async function resolveYouTubeChannel(rawQuery: string): Promise<ChannelAu
         calculatedVph = Math.round(latestVideo.viewsNum / (14 * 24));
       }
     } else {
-      calculatedVph = Math.round(subNum * 0.024);
+      calculatedVph = Math.round(subNum * 0.008);
     }
-    calculatedVph = Math.max(calculatedVph, Math.round(subNum * 0.015));
+    calculatedVph = Math.max(0, calculatedVph);
 
-    const peakVph = Math.round(calculatedVph * 3.4);
+    const peakVph = Math.round(calculatedVph * 2.8);
     const trendPercent = (12 + (subNum % 17)).toFixed(1);
 
     // Calculate RPM and Regional VidIQ Market Tier
@@ -388,14 +389,14 @@ export async function resolveYouTubeChannel(rawQuery: string): Promise<ChannelAu
       rpmVal = isTechOrFinance ? 0.85 : 0.60;
       regionBadge = '🇺🇿 Uzbekistan & CIS ($0.35 – $0.90 RPM)';
       monetizationLabel = isTechOrFinance
-        ? 'Regional Tech & Commercial High CPM (AdSense + Direct Integrations)'
-        : 'Regional Entertainment & Media Leader (AdSense + Brand Deals)';
+        ? 'Regional Tech & Commercial CPM'
+        : 'Regional Entertainment & Media';
     } else {
-      rpmVal = isTechOrFinance ? 4.25 : 3.20;
-      regionBadge = '🌍 US & Global Market ($2.00 – $4.00 RPM)';
+      rpmVal = isTechOrFinance ? 3.50 : 2.20;
+      regionBadge = '🌍 US & Global Market ($1.50 – $3.50 RPM)';
       monetizationLabel = isTechOrFinance
-        ? 'Tier 1 Global Tech High CPM (AdSense + Brand Integrations)'
-        : 'Global Scale Audience (AdSense + Merch + Direct Sponsors)';
+        ? 'Tier 1 Global High CPM'
+        : 'Global Scale Audience';
     }
 
     // Realistic Monthly Views and Earnings Calculation (VidIQ Model)
@@ -403,56 +404,59 @@ export async function resolveYouTubeChannel(rawQuery: string): Promise<ChannelAu
       ? Math.round(parsedVideos.reduce((a, b) => a + b.viewsNum, 0) / parsedVideos.length)
       : Math.round(viewsNum / Math.max(videoNum, 1));
 
-    const estimatedMonthlyUploads = videoNum > 300 ? 4 : videoNum > 100 ? 3 : 2;
-    const monthlyLongFormViews = Math.round(Math.max(avgViewsPerVid * estimatedMonthlyUploads, subNum * 0.45));
-    const monthlyShortsViews = Math.round(monthlyLongFormViews * 1.5);
+    // YouTube Partner Program (YPP) Threshold: 1,000 subscribers required for AdSense monetization!
+    const isMonetized = subNum >= 1000;
 
-    // AdSense calculations
-    const longFormAdsenseMin = Math.round((monthlyLongFormViews / 1000) * (rpmVal * 0.85));
-    const longFormAdsenseMax = Math.round((monthlyLongFormViews / 1000) * (rpmVal * 1.25));
-
-    const shortsRpm = isUzbekOrCIS ? 0.035 : 0.09;
-    const shortsAdsenseMin = Math.round((monthlyShortsViews / 1000) * (shortsRpm * 0.8));
-    const shortsAdsenseMax = Math.round((monthlyShortsViews / 1000) * (shortsRpm * 1.3));
-
-    const totalAdsenseMin = longFormAdsenseMin + shortsAdsenseMin;
-    const totalAdsenseMax = longFormAdsenseMax + shortsAdsenseMax;
-
-    // Sponsorship potential estimation
+    let monthlyMin = 0;
+    let monthlyMax = 0;
+    let monthlyAdsenseMin = 0;
+    let monthlyAdsenseMax = 0;
+    let longFormAdsenseMin = 0;
+    let longFormAdsenseMax = 0;
+    let shortsAdsenseMin = 0;
+    let shortsAdsenseMax = 0;
     let sponsorshipMin = 0;
     let sponsorshipMax = 0;
-    if (isUzbekOrCIS) {
+
+    if (isMonetized) {
+      const estimatedMonthlyUploads = videoNum > 300 ? 4 : videoNum > 100 ? 3 : 2;
+      const monthlyLongFormViews = Math.round(Math.max(avgViewsPerVid * estimatedMonthlyUploads, subNum * 0.45));
+      const monthlyShortsViews = Math.round(monthlyLongFormViews * 1.5);
+
+      // AdSense calculations
+      longFormAdsenseMin = Math.round((monthlyLongFormViews / 1000) * (rpmVal * 0.85));
+      longFormAdsenseMax = Math.round((monthlyLongFormViews / 1000) * (rpmVal * 1.25));
+
+      const shortsRpm = isUzbekOrCIS ? 0.035 : 0.08;
+      shortsAdsenseMin = Math.round((monthlyShortsViews / 1000) * (shortsRpm * 0.8));
+      shortsAdsenseMax = Math.round((monthlyShortsViews / 1000) * (shortsRpm * 1.3));
+
+      monthlyAdsenseMin = longFormAdsenseMin + shortsAdsenseMin;
+      monthlyAdsenseMax = longFormAdsenseMax + shortsAdsenseMax;
+
       if (subNum >= 2000000) {
-        sponsorshipMin = 2500;
-        sponsorshipMax = 6000;
+        sponsorshipMin = isUzbekOrCIS ? 2500 : 20000;
+        sponsorshipMax = isUzbekOrCIS ? 6000 : 50000;
       } else if (subNum >= 500000) {
-        sponsorshipMin = 1000;
-        sponsorshipMax = 2800;
+        sponsorshipMin = isUzbekOrCIS ? 1000 : 5000;
+        sponsorshipMax = isUzbekOrCIS ? 2800 : 15000;
       } else if (subNum >= 100000) {
-        sponsorshipMin = 350;
-        sponsorshipMax = 1100;
-      } else {
-        sponsorshipMin = 100;
-        sponsorshipMax = 300;
+        sponsorshipMin = isUzbekOrCIS ? 300 : 1500;
+        sponsorshipMax = isUzbekOrCIS ? 900 : 4500;
+      } else if (subNum >= 10000) {
+        sponsorshipMin = isUzbekOrCIS ? 50 : 200;
+        sponsorshipMax = isUzbekOrCIS ? 150 : 600;
       }
+
+      monthlyMin = monthlyAdsenseMin + Math.round(sponsorshipMin * 0.4);
+      monthlyMax = monthlyAdsenseMax + sponsorshipMax;
     } else {
-      if (subNum >= 2000000) {
-        sponsorshipMin = 25000;
-        sponsorshipMax = 75000;
-      } else if (subNum >= 500000) {
-        sponsorshipMin = 7500;
-        sponsorshipMax = 22000;
-      } else if (subNum >= 100000) {
-        sponsorshipMin = 1800;
-        sponsorshipMax = 6500;
-      } else {
-        sponsorshipMin = 450;
-        sponsorshipMax = 1500;
-      }
+      // Under 1,000 subscribers: Channel is NOT monetized on YouTube
+      monthlyMin = 0;
+      monthlyMax = 0;
+      monetizationLabel = 'Monetizatsiyaga ulanmagan (< 1,000 obunachi talab qilinadi)';
     }
 
-    const monthlyMin = totalAdsenseMin + Math.round(sponsorshipMin * 0.4);
-    const monthlyMax = totalAdsenseMax + sponsorshipMax;
     const annualEst = Math.round(monthlyMax * 11.2);
 
     const ratio = subNum > 0 ? avgViewsPerVid / subNum : 0.5;
@@ -601,7 +605,7 @@ export async function resolveYouTubeChannel(rawQuery: string): Promise<ChannelAu
         monetizationStatus: monetizationLabel,
         regionBadge,
         breakdown: {
-          monthlyAdsense: `$${totalAdsenseMin.toLocaleString()} – $${totalAdsenseMax.toLocaleString()}`,
+          monthlyAdsense: `$${monthlyAdsenseMin.toLocaleString()} – $${monthlyAdsenseMax.toLocaleString()}`,
           shortsEstimate: `$${shortsAdsenseMin.toLocaleString()} – $${shortsAdsenseMax.toLocaleString()}`,
           longFormEstimate: `$${longFormAdsenseMin.toLocaleString()} – $${longFormAdsenseMax.toLocaleString()}`,
           sponsorshipPotential: `$${sponsorshipMin.toLocaleString()} – $${sponsorshipMax.toLocaleString()} / deal`,

@@ -293,27 +293,33 @@
     if (renderedCardKey === currentKey) {
       return;
     }
-    renderedCardKey = currentKey;
-
-    const activeTitle = currentAuditedData?.channelTitle || detected.title || 'YouTube Kanal';
-    const activeHandle = currentAuditedData?.channelHandle || detected.handle || '';
+    // Prefer the real visible channel title from the page DOM (e.g. "VELORA", "A K skill")
+    const isDetectedHandle = detected.title && (detected.title.startsWith('@') || detected.title.includes('-h8q') || detected.title.includes('-p5n'));
+    const activeTitle = (!isDetectedHandle && detected.title) || (currentAuditedData?.channelTitle && !currentAuditedData.channelTitle.startsWith('@') ? currentAuditedData.channelTitle : detected.title) || 'YouTube Kanal';
+    const activeHandle = detected.handle || currentAuditedData?.channelHandle || '';
     const activeSubs = currentAuditedData?.subscribers || detected.subscribers || 'Ma\'lumot olinmoqda...';
     const activeVideos = currentAuditedData?.videoCount || detected.videoCount || '—';
     const activeViews = currentAuditedData?.totalViews || '—';
     const activeScore = currentAuditedData?.overallScore || 91;
-    const activeVph = currentAuditedData?.vph?.currentVph || '320 VPH';
-    const peakVph = currentAuditedData?.vph?.peakVph || '1,150 VPH';
+    const activeVph = currentAuditedData?.vph?.currentVph || '0 VPH';
+    const peakVph = currentAuditedData?.vph?.peakVph || '0 VPH';
     
-    let monthlyRange = '$45 – $380';
-    let estRpm = '$1.85';
-    if (currentAuditedData?.monetization) {
+    // Dynamic monetization estimation (VidIQ & YouTube YPP criteria: 1,000+ subs required!)
+    let monthlyRange = '$0 (Monetizatsiyasiz)';
+    let estRpm = '$0.00';
+    const numSubs = parseSubscriberCount(activeSubs);
+
+    if (numSubs < 1000) {
+      monthlyRange = '$0 (Monetizatsiyasiz)';
+      estRpm = '$0.00 (< 1K subs)';
+    } else if (currentAuditedData?.monetization && currentAuditedData.monetization.projectedMonthlyMax !== '$0') {
       monthlyRange = `${currentAuditedData.monetization.projectedMonthlyMin} – ${currentAuditedData.monetization.projectedMonthlyMax}`;
-      estRpm = currentAuditedData.monetization.estimatedRpm || '$2.50';
+      estRpm = currentAuditedData.monetization.estimatedRpm || '$1.85';
     } else {
-      const approxSubs = parseSubscriberCount(detected.subscribers);
-      const minEst = Math.max(25, Math.round(approxSubs * 0.012));
-      const maxEst = Math.max(120, Math.round(approxSubs * 0.065));
+      const minEst = Math.round(numSubs * 0.015);
+      const maxEst = Math.round(numSubs * 0.08);
       monthlyRange = `$${minEst.toLocaleString()} – $${maxEst.toLocaleString()}`;
+      estRpm = '$1.85';
     }
 
     const dashboardUrl = `${API_BASE_URL}/uz/dashboard`;

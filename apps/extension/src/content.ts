@@ -63,7 +63,8 @@
   // ---------------------------------------------------------------------------
   function injectAlwaysVisibleBadge() {
     if (document.getElementById(FLOATING_BADGE_ID)) return;
-    if (!document.body) return;
+    const targetParent = document.body || document.documentElement;
+    if (!targetParent) return;
 
     const badge = document.createElement('div');
     badge.id = FLOATING_BADGE_ID;
@@ -109,7 +110,7 @@
       }
     };
 
-    document.body.appendChild(badge);
+    targetParent.appendChild(badge);
   }
 
   // ---------------------------------------------------------------------------
@@ -170,13 +171,16 @@
   function injectChannelStatsCard() {
     if (document.getElementById(CHANNEL_CARD_ID)) return;
 
-    // Locate placement under channel header
+    // Locate placement under channel header or banner
     const channelHeader =
       document.querySelector('ytd-tabbed-page-header') ||
+      document.querySelector('ytd-browse[page-subtype="channels"] #header') ||
       document.querySelector('#channel-container') ||
       document.querySelector('ytd-c4-tabbed-header-renderer') ||
       document.querySelector('#page-header') ||
-      document.querySelector('#channel-header');
+      document.querySelector('#channel-header') ||
+      document.querySelector('#channel-tag')?.closest('div') ||
+      document.querySelector('ytd-browse[page-subtype="channels"] #primary');
 
     if (!channelHeader) return;
 

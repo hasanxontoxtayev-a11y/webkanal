@@ -451,13 +451,15 @@ bot.command("channel", async (ctx) => {
 
   const subFormatted = Number(channel.subscriberCount).toLocaleString();
   const viewFormatted = Number(channel.viewCount).toLocaleString();
+  const safeTitle = (channel.title || 'Creator Studio').replace(/([_*\[\]()~`>#+=|{}.!-])/g, '\\$1');
+  const safeHandle = (channel.customUrl || '').replace(/([_*\[\]()~`>#+=|{}.!-])/g, '\\$1');
 
   const msg =
-    `📺 **TubePilot Workspace Channel**\n\n` +
-    `🎬 **${channel.title}** (${channel.customUrl || ''})\n` +
-    `👥 **Subscribers:** ${subFormatted}\n` +
-    `👁️ **Total Views:** ${viewFormatted}\n` +
-    `🎥 **Uploads:** ${channel.videoCount}\n\n` +
+    `📺 *TubePilot Workspace Channel*\n\n` +
+    `🎬 *${safeTitle}* (${safeHandle})\n` +
+    `👥 *Subscribers:* ${subFormatted}\n` +
+    `👁️ *Total Views:* ${viewFormatted}\n` +
+    `🎥 *Uploads:* ${channel.videoCount}\n\n` +
     `📊 View live analytics on your dashboard:\n👉 ${dashboardUrl}`;
 
   await ctx.reply(msg, { parse_mode: "Markdown" });
@@ -638,8 +640,9 @@ bot.on("message:text", async (ctx) => {
       );
     }
 
+    const safeTitle = (channel.title || 'Creator Studio').replace(/([_*\[\]()~`>#+=|{}.!-])/g, '\\$1');
     return ctx.reply(
-      `📺 **Ulangan Kanal: ${channel.title}**\n` +
+      `📺 *Ulangan Kanal:* ${safeTitle}\n` +
       `👥 Obunachilar: ${channel.subscriberCount.toLocaleString()}\n` +
       `👁️ Jami ko'rishlar: ${channel.viewCount.toLocaleString()}\n` +
       `🎬 Videolar soni: ${channel.videoCount}\n\n` +

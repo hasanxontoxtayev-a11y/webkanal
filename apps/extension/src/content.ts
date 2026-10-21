@@ -449,7 +449,9 @@
           <div style="padding:14px 16px;background:#182030;border-radius:10px;border:1px solid rgba(255,255,255,0.04);">
             <span style="display:block;font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:6px;">Est. monthly earnings</span>
             <div style="font-size:18px;font-weight:900;color:#fff;">
-              <span>${singleMonthlyEarnings}</span>
+              ${numSubs < 1000 
+                ? `<span style="font-size:18px;color:#94a3b8;font-weight:700;">—</span> <span style="font-size:11px;color:#f87171;font-weight:700;margin-left:4px;">(Ulanmagan)</span>` 
+                : `<span>${singleMonthlyEarnings}</span>`}
             </div>
           </div>
           <!-- Box 4: Avg. video length -->

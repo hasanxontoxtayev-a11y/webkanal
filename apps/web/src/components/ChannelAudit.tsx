@@ -494,10 +494,21 @@ export function ChannelAudit({
                 </div>
 
                 <div className="flex items-baseline gap-2 my-2">
-                  <span className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                    {auditData.monetization?.projectedMonthlyMin} – {auditData.monetization?.projectedMonthlyMax}
-                  </span>
-                  <span className="text-xs text-gray-400">/ month (Total Net)</span>
+                  {auditData.monetization?.projectedMonthlyMax === '$0' || auditData.monetization?.projectedMonthlyMin === '$0' && auditData.monetization?.projectedMonthlyMax === '$0' ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl sm:text-3xl font-black text-slate-400 tracking-tight">—</span>
+                      <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                        Monetizatsiyaga ulanmagan (YPP talabi: 1,000 obunachi)
+                      </span>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                        {auditData.monetization?.projectedMonthlyMin} – {auditData.monetization?.projectedMonthlyMax}
+                      </span>
+                      <span className="text-xs text-gray-400">/ month (Total Net)</span>
+                    </>
+                  )}
                 </div>
 
                 {/* Clean 3-Pillar Breakdown */}

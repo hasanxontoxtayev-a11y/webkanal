@@ -441,10 +441,8 @@ function DashboardContent() {
 
           {/* Chrome Extension HUD Button */}
           <a
-            href="/tubepilot-extension.zip"
+            href="/api/extension/download"
             download="tubepilot-extension.zip"
-            target="_blank"
-            rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-black rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white transition-all shadow-md shadow-emerald-950/40 active:scale-95 border border-emerald-400/40 cursor-pointer"
             title="VidIQ kabi YouTube ichida ko'rinadigan TubePilot Chrome Kengaytmasini yuklab olish"
           >

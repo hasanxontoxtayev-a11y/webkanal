@@ -87,10 +87,11 @@
       user-select: none !important;
       transition: transform 0.2s, box-shadow 0.2s !important;
     `;
+    const activeName = channelData.channelTitle || 'YouTube';
     badge.innerHTML = `
       <span style="font-size:16px;">🚀</span>
       <span>TubePilot AI Active</span>
-      <span style="font-size:10px; background:#000; color:#fbbf24; padding:2px 6px; border-radius:10px; font-weight:800;">VELORA</span>
+      <span style="font-size:10px; background:#000; color:#fbbf24; padding:2px 6px; border-radius:10px; font-weight:800;">${activeName}</span>
     `;
 
     badge.onmouseenter = () => {
@@ -342,6 +343,37 @@
 
   // ---------------------------------------------------------------------------
   // Master Render Function
+  // Dynamic channel extraction: detects whatever channel page is currently open in the browser
+  function detectCurrentChannel(): { handle?: string; title?: string } {
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    const firstPart = pathParts[0] || '';
+    
+    // Check @handle format (e.g. /@mrbeast, /@kunuz)
+    if (firstPart.startsWith('@')) {
+      return { handle: firstPart };
+    }
+
+    // Check DOM header elements if available
+    const headerTitle = document.querySelector('ytd-tabbed-page-header #channel-name yt-formatted-string')?.textContent?.trim()
+      || document.querySelector('#page-header #channel-name')?.textContent?.trim()
+      || document.querySelector('ytd-channel-name yt-formatted-string')?.textContent?.trim();
+
+    const headerHandle = document.querySelector('ytd-tabbed-page-header #channel-handle')?.textContent?.trim()
+      || document.querySelector('#page-header #channel-tag')?.textContent?.trim();
+
+    if (headerHandle) {
+      return { handle: headerHandle.startsWith('@') ? headerHandle : `@${headerHandle}`, title: headerTitle || undefined };
+    }
+
+    if (headerTitle) {
+      return { title: headerTitle };
+    }
+
+    return {};
+  }
+
+  // ---------------------------------------------------------------------------
+  // Master Render Function
   // ---------------------------------------------------------------------------
   function renderAll() {
     injectAlwaysVisibleBadge();
@@ -353,10 +385,13 @@
   // ---------------------------------------------------------------------------
   // Live Data Fetcher via Background Service Worker
   // ---------------------------------------------------------------------------
+  let lastSyncedQuery = '';
   async function syncLiveData() {
     try {
-      const parts = window.location.pathname.split('/').filter(Boolean);
-      const query = parts[0]?.startsWith('@') ? parts[0] : '@velora-p5n';
+      const detected = detectCurrentChannel();
+      const query = detected.handle || detected.title;
+      if (!query || query === lastSyncedQuery) return;
+      lastSyncedQuery = query;
 
       const res = await sendMessagePromise({ type: 'FETCH_AUDIT', query });
       if (res?.success && res.data?.data) {

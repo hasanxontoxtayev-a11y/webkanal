@@ -210,25 +210,44 @@ bot.command("start", async (ctx) => {
   const userIdFrom = BigInt(ctx.from?.id || 0);
   const lang = await getUserLang(userIdFrom);
 
-  // Send persistent menu so user ALWAYS has buttons at the bottom
   const persistentMenu = getPersistentMenu(lang);
+  const dashboardUrl = `${getDashboardUrl()}/${lang}/dashboard`;
 
-  const langSelectorKeyboard = new InlineKeyboard()
-    .text("🇺🇿 O'zbekcha", `set_lang:uz:${payload}`)
-    .text("🇷🇺 Русский", `set_lang:ru:${payload}`)
-    .text("🇬🇧 English", `set_lang:en:${payload}`);
+  const hubKeyboard = new InlineKeyboard()
+    .url("🌐 Boshqaruv Paneli (Web)", dashboardUrl)
+    .row()
+    .text("🔍 Kanal Auditi", "btn_audit_info")
+    .text("🖼️ CTR Vision", "btn_ctr_info")
+    .row()
+    .text("🇺🇿 UZ", `set_lang:uz:${payload}`)
+    .text("🇷🇺 RU", `set_lang:ru:${payload}`)
+    .text("🇬🇧 EN", `set_lang:en:${payload}`);
 
-  await ctx.reply(
-    "👋 **TubePilot AI — Avtonom YouTube Kopiloti & VidIQ Muqobiliga Xush Kelibsiz!** 🚀\n\n" +
-    "Tanlangan til / Язык: **" + lang.toUpperCase() + "** (O'zgartirish uchun pastdagi tugmani bosing):",
-    {
-      reply_markup: langSelectorKeyboard,
-      parse_mode: "Markdown",
-    }
-  );
+  const startMsg =
+    lang === "ru"
+      ? `👋 **Добро пожаловать в TubePilot AI!** 🚀\n\n` +
+        `Автономный ИИ-копилот и альтернатива VidIQ для авторов YouTube.\n\n` +
+        `💡 **Что вы можете сделать прямо сейчас:**\n` +
+        `• Задайте **любой вопрос** по YouTube (алгоритмы, теги, названия, монетизация) — Gemini AI ответит мгновенно!\n` +
+        `• Отправьте фото обложки для проверки CTR Vision.\n` +
+        `• Введите \`@канал\` (например \`@kunuz\`) для мгновенного аудита.\n\n` +
+        `👉 Подробное руководство: нажмите /help`
+      : `👋 **TubePilot AI — YouTube Kopilotiga Xush Kelibsiz!** 🚀\n\n` +
+        `YouTube ijodkorlari uchun VidIQ muqobili bo'lgan sun'iy intellekt tizimi.\n\n` +
+        `💡 **Bot imkoniyatlari:**\n` +
+        `• YouTube bo'yicha **istalgan savolingizni yozing** (algoritm, obunachi yig'ish, CTR, daromad) — Google Gemini darhol batafsil javob beradi!\n` +
+        `• Videongiz muqovasini (rasmini) yuborib, CTR Vision tahlilini oling.\n` +
+        `• Istalgan kanalni audit qilish uchun \`@kanal\` (masalan \`@kunuz\`) yuboring.\n\n` +
+        `👉 To'liq qo'llanma va buyruqlar: /help`;
 
-  // Immediately display the full guide and quick action cards
-  await sendIntroHelpGuide(ctx);
+  await ctx.reply(startMsg, {
+    reply_markup: hubKeyboard,
+    parse_mode: "Markdown",
+  });
+
+  await ctx.reply("Pastdagi tezkor menyudan foydalanishingiz mumkin 👇", {
+    reply_markup: persistentMenu,
+  });
 });
 
 // -----------------------------------------------------------------------------

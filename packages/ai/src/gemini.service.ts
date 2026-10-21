@@ -159,68 +159,32 @@ Task:
   }
 
   /**
-   * Conversational YouTube Creator & TubePilot Assistant (Optimized for sub-second rapid response)
+   * Conversational YouTube Creator & TubePilot Assistant powered by Google Gemini
    */
   public static async askCreatorAssistant(
     userQuery: string,
     language: "uz" | "ru" | "en" = "uz"
   ): Promise<string> {
-    const qLower = userQuery.toLowerCase().trim();
-
-    // Fast Instant Local Knowledge Engine (0ms response time for common creator queries)
-    if (qLower.includes("ctr") || qLower.includes("muqova") || qLower.includes("oblojka") || qLower.includes("thumbnail")) {
-      return language === "ru"
-        ? "🎯 **TubePilot AI — CTR va Muqova Strategiyasi:**\n\n" +
-          "• **Kontrast (Fon va Qahramon):** Obyektni fonga nisbatan yorqinroq qiling, kontur (rim light) qo'shing.\n" +
-          "• **3 So'z Qoidasi:** Muqovadagi matn 3 so'zdan oshmasin va katta, qalin shriftda bo'lsin.\n" +
-          "• **Vaqt Belgisi:** O'ng pastki burchakni bo'sh qoldiring (YouTube vaqt belgisi qoplab qo'ymasin).\n" +
-          "• **CTR Maqsadi:** Browse oqimidan tavsiyalarga chiqish uchun 7.5% - 10% CTR'ga intiling."
-        : language === "en"
-        ? "🎯 **TubePilot AI — Thumbnail & CTR Strategy:**\n\n" +
-          "• **Contrast & Pop:** Ensure foreground subject is separated from background with distinct lighting.\n" +
-          "• **3-Word Limit:** Large, bold text under 3 words designed for small smartphone screens.\n" +
-          "• **Safe Zones:** Keep the bottom-right corner empty to avoid timestamp overlap.\n" +
-          "• **Target:** Aim for 8%+ CTR in Browse features for rapid algorithmic pickup."
-        : "🎯 **TubePilot AI — CTR va Muqova Strategiyasi:**\n\n" +
-          "• **Kontrast (Fon va Qahramon):** Asosiy obyekt yoki yuzni fonga nisbatan yorqinroq qiling.\n" +
-          "• **3 So'z Qoidasi:** Muqovadagi matn 3 so'zdan oshmasin va smartfonda o'qiladigan yirik shriftda bo'lsin.\n" +
-          "• **Xavfsiz Hudud:** O'ng pastki burchakni bo'sh qoldiring (YouTube 00:00 vaqt belgisi qoplab qo'ymasin).\n" +
-          "• **Maqsad:** Browse tavsiyalariga chiqish uchun 8%+ CTR natijasini ko'zlang.";
-    }
-
-    if (qLower.includes("algoritm") || qLower.includes("tavsiya") || qLower.includes("prosmotr") || qLower.includes("views") || qLower.includes("vph")) {
-      return language === "ru"
-        ? "⚡ **TubePilot AI — YouTube Algoritmlari & VPH Tezligi:**\n\n" +
-          "• **Dastlabki 30 soniya (AVD):** Tomoshabinlarning kamida 65-70% qismini birinchi 30 soniyada ushlab qoling.\n" +
-          "• **VPH Tezligi:** Video chiqqanidan keyingi birinchi 2-3 soatdagi ko'rishlar tezligi tavsiyaga tushishni belgilaydi.\n" +
-          "• **Kopilot:** TubePilot avtonom izohlar tizimi orqali har bir yangi izohga tezkor javob berib, jalb qilishni (engagement) oshiring."
-        : "⚡ **TubePilot AI — YouTube Algoritmlari & VPH Tezligi:**\n\n" +
-          "• **Dastlabki 30 soniya (AVD):** Tomoshabinlarning kamida 65-70% qismini dastlabki 30 soniyada ushlab qoling.\n" +
-          "• **VPH (Views Per Hour):** Yangi video chiqqan paytda obunachilarni tezroq jalb qilish algoritmni uyg'otadi.\n" +
-          "• **Interaktivlik:** Har bir izohga TubePilot orqali tezkor javob qaytaring — bu videoni ko'proq tavsiyaga chiqaradi.";
-    }
-
-    if (qLower.includes("daromad") || qLower.includes("pul") || qLower.includes("rpm") || qLower.includes("cpm") || qLower.includes("monetizatsiya")) {
-      return language === "ru"
-        ? "💰 **TubePilot AI — AdSense RPM & Daromad Optimallashtirish:**\n\n" +
-          "• **Video davomiyligi:** 8 daqiqadan uzun videolarda Mid-roll (o'rtadagi) reklamalarni to'g'ri joylashtiring.\n" +
-          "• **Auditoriya Geografiyasi:** AQSh va Yevropa auditoriyasi RPM'ni 5x - 10x gacha oshiradi.\n" +
-          "• **Homiylik:** 10,000+ faol ko'rishlar bazasi bilan brendlarga integratsiya taklif qiling."
-        : "💰 **TubePilot AI — AdSense RPM & Daromad:**\n\n" +
-          "• **8+ daqiqalik videolar:** Videongiz 8 daqiqadan oshsa, o'rtasiga qo'shimcha reklama (Mid-roll) qo'yish imkoni ochiladi.\n" +
-          "• **Yuqori RPM Mavzulari:** Moliya, texnologiya, biznes mavzularida reklama narxi 3-5 barobar yuqori bo'ladi.\n" +
-          "• **Homiylik salohiyati:** TubePilot tahlil paneli orqali har bir videongizning homiylik narxini bilib oling.";
-    }
-
     const apiKey = process.env.GEMINI_API_KEY;
+
     if (apiKey) {
-      const systemPrompt = `You are TubePilot AI YouTube Growth Consultant. Answer in ${language.toUpperCase()} within 3 bullets:`;
-      const candidateModels = ["gemini-3.8-flash", "gemini-2.5-flash"];
+      const systemInstruction =
+        `You are TubePilot AI — the elite YouTube Growth Consultant and Official Companion Bot for TubePilot AI (VidIQ competitor).
+Answer the creator's question with deep expertise on YouTube algorithms, CTR, audience retention (AVD), VPH velocity, AdSense RPM, shorts strategy, and viral titles.
+Respond naturally, fluently and helpfully in ${language === "ru" ? "RUSSIAN" : language === "en" ? "ENGLISH" : "UZBEK"}.
+Format your reply cleanly with Markdown bullet points and actionable steps.`;
+
+      // Active Google Gemini models verified on your API key
+      const candidateModels = [
+        "gemini-3.5-flash-lite",
+        "gemini-3.6-flash",
+        "gemini-3.5-flash",
+      ];
 
       for (const model of candidateModels) {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 3500); // 3.5s strict timeout
+          const timeoutId = setTimeout(() => controller.abort(), 9000);
 
           const res = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
@@ -229,32 +193,53 @@ Task:
               headers: { "Content-Type": "application/json" },
               signal: controller.signal,
               body: JSON.stringify({
-                contents: [{ parts: [{ text: `${systemPrompt}\n\nSavol: ${userQuery}` }] }],
-                generationConfig: { maxOutputTokens: 300, temperature: 0.6 }
+                systemInstruction: {
+                  parts: [{ text: systemInstruction }]
+                },
+                contents: [
+                  {
+                    parts: [{ text: userQuery }]
+                  }
+                ],
+                generationConfig: {
+                  maxOutputTokens: 600,
+                  temperature: 0.7
+                }
               })
             }
           );
           clearTimeout(timeoutId);
 
-          const data = await res.json();
-          const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) return text;
-        } catch {
-          // Timeout or network fallback
+          if (res.ok) {
+            const data = await res.json();
+            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text && text.trim().length > 0) {
+              return text.trim();
+            }
+          }
+        } catch (err: any) {
+          console.warn(`Gemini model ${model} request failed:`, err.message);
         }
       }
     }
 
-    // High quality instant fallback
-    return language === "ru"
-      ? "💡 **TubePilot AI Эксперт:**\n\n" +
-        "• **Удержание аудитории:** Удерживайте зрителей в первые 30 секунд (цель: более 60% удержания).\n" +
-        "• **CTR Обложек:** Используйте высокий контраст и крупный читаемый текст для кликабельности от 8%+.\n" +
-        "• **Регулярность:** Публикуйте видео в пиковые часы активности вашей аудитории."
-      : "💡 **TubePilot AI Ekspert:**\n\n" +
-        "• **Tomoshabin diqqati:** Videoning dastlabki 30 soniyasida asosiy qiziqishni bering (maqsad: 60%+ AVD).\n" +
-        "• **Muqova CTR:** Ob'yekt va fon kontrastini oshirib, CTR ko'rsatkichini 8%+ darajaga ko'taring.\n" +
-        "• **Muntazamlik:** Tomoshabinlar faol bo'lgan eng qulay vaqtlarda video e'lon qiling.";
+    // Dynamic emergency fallback
+    if (language === "ru") {
+      return (
+        `💡 **TubePilot AI Эксперт (YouTube Рекомендации):**\n\n` +
+        `По вашему вопросу: *"${userQuery}"*\n\n` +
+        `• **Удержание аудитории:** Удерживайте зрителей в первые 30 секунд видео (цель: более 65% AVD).\n` +
+        `• **CTR Обложек:** Используйте высокий контраст и крупный читаемый шрифт (цель: от 8%+ CTR).\n` +
+        `• **Взаимодействие:** Отвечайте на первые 20 комментариев в первый час после публикации видео.`
+      );
+    }
+    return (
+      `💡 **TubePilot AI Ekspert (YouTube Maslahati):**\n\n` +
+      `Sizning savolingiz: *"${userQuery}"*\n\n` +
+      `• **Tomoshabin diqqati:** Videoning dastlabki 30 soniyasida asosiy qiziqishni bering (maqsad: 65%+ AVD).\n` +
+      `• **Muqova CTR:** Ob'yekt va fon kontrastini oshirib, CTR ko'rsatkichini 8%+ darajaga ko'taring.\n` +
+      `• **Tezkor muloqot:** Video chiqqan birinchi 1-2 soatda barcha yangi izohlarga faol javob bering.`
+    );
   }
 }
 

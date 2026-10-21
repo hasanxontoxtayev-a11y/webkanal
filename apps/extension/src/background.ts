@@ -26,6 +26,14 @@ chrome.runtime.onMessage.addListener((message: any, _sender: any, sendResponse: 
     return true; // asynchronous response
   }
 
+  if (message.type === 'FETCH_CONNECTED_CHANNEL') {
+    fetch(`${API_BASE_URL}/api/channels/current`, { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data) => sendResponse({ success: true, data }))
+      .catch((err) => sendResponse({ success: false, error: err?.message || 'Network error' }));
+    return true;
+  }
+
   if (message.type === 'FETCH_AUDIT') {
     const query = encodeURIComponent(message.query || '');
     fetch(`${API_BASE_URL}/api/channels/audit?q=${query}`, { cache: 'no-store' })

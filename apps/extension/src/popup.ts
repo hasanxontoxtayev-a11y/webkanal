@@ -12,8 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
     auditBtn.addEventListener('click', () => {
       const handle = inputEl.value.trim();
       const targetUrl = handle
-        ? `http://localhost:3001/uz/dashboard?audit_handle=${encodeURIComponent(handle)}`
-        : `http://localhost:3001/uz/dashboard`;
+        ? `https://www.tubepilotpro.com/uz/dashboard?audit_handle=${encodeURIComponent(handle)}`
+        : `https://www.tubepilotpro.com/uz/dashboard`;
       
       chrome.tabs.create({ url: targetUrl });
     });

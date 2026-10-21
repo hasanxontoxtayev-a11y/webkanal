@@ -443,12 +443,13 @@ function DashboardContent() {
           <a
             href="/tubepilot-extension.zip"
             download="tubepilot-extension.zip"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl bg-dark-800 hover:bg-dark-750 text-slate-200 border border-malla-500/30 hover:border-malla-500/60 transition-all shadow-sm group"
-            title="VidIQ kabi YouTube ichida ko'rinadigan TubePilot Chrome Kengaytmasi"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-black rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white transition-all shadow-md shadow-emerald-950/40 active:scale-95 border border-emerald-400/40 cursor-pointer"
+            title="VidIQ kabi YouTube ichida ko'rinadigan TubePilot Chrome Kengaytmasini yuklab olish"
           >
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-malla-300 font-extrabold group-hover:text-malla-200">YouTube HUD</span>
-            <span className="text-[10px] text-slate-400 hidden md:inline">(Kengaytma)</span>
+            <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+            <span>🚀 YouTube HUD (Kengaytma)</span>
           </a>
 
           <LocaleSwitcher />

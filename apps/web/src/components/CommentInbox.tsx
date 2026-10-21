@@ -36,41 +36,100 @@ interface CommentInboxProps {
 export function CommentInbox({ connectedChannelTitle = 'YouTube Kanali', connectedChannelHandle = '@kanal' }: CommentInboxProps) {
   const t = useTranslations('copilot');
 
-  const getDefaultComments = (title: string, handle: string): CommentItem[] => [
-    {
-      id: 'c1',
-      authorDisplayName: 'Sardor Alimov',
-      originalText: `${title} jamoasiga kattakon rahmat! Keyingi videoda qaysi mavzuni yoritasizlar? Montaj darsligi chiqarilsa zo'r bo'lardi!`,
-      detectedLanguage: 'Uzbek',
-      aiDraftReply: `Assalomu alaykum Sardorbek! Fikringiz uchun rahmat! Aynan montaj sirlari va YouTube algoritmlari bo'yicha to'liq darslik ustida ishlayapmiz, tez orada chiqaramiz! 🚀`,
-      videoTitle: `${title}: 2026 Yangi Format`,
-    },
-    {
-      id: 'c2',
-      authorDisplayName: 'Алексей Смирнов',
-      originalText: `Отличный выпуск! Подскажите, какой софт используете для оптимизации тегов и кликабельности обложек?`,
-      detectedLanguage: 'Russian',
-      aiDraftReply: `Привет, Алексей! Используем связку TubePilot AI и Gemini Vision — анализирует контраст и CTR за пару секунд до публикации. Спасибо за поддержку! 👍`,
-      videoTitle: `${title}: Секреты YouTube Охватов`,
-    },
-    {
-      id: 'c3',
-      authorDisplayName: 'Marcus Vance',
-      originalText: `Insane video quality and pacing! How long did the production and color grading take for this upload?`,
-      detectedLanguage: 'English',
-      aiDraftReply: `Thanks Marcus! This one took about 18 hours between DaVinci Resolve grading and pacing cuts. Really glad you enjoyed the cinematic feel! 🔥`,
-      videoTitle: `${title}: Complete Studio Breakdown`,
-    },
-  ];
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [filterMode, setFilterMode] = useState<'ALL' | 'UNANSWERED' | 'APPROVED'>('ALL');
+
+  const generateChannelComments = (title: string, handle: string): CommentItem[] => {
+    const isMusicOrMedia = title.toLowerCase().includes('velora') || title.toLowerCase().includes('music') || title.toLowerCase().includes('media');
+    
+    if (isMusicOrMedia) {
+      return [
+        {
+          id: 'vc_1',
+          authorDisplayName: 'Nodirbek Qodirov',
+          originalText: `${title} treklarini har kuni tinglayman! Bu musiqaning WAV sifatini qayerdan yuklab olsam bo'ladi? Yana shunaqa relizlar kutyapmiz! 🔥`,
+          detectedLanguage: 'Uzbek',
+          aiDraftReply: `Assalomu alaykum Nodirbek! Qo'llab-quvvatlaganingiz uchun katta rahmat! Barcha treklarning to'liq va yuqori sifati tavsifdagi Spotify va Telegram kanalda bor. Tez orada yangi reliz chiqadi! 🚀`,
+          videoTitle: `${title} - Official Release 2026`,
+        },
+        {
+          id: 'vc_2',
+          authorDisplayName: 'Elena Petrova',
+          originalText: `Потрясающая атмосфера и продакшн трека! Подскажите, будет ли расширенная 1-часовая версия для работы и фокуса?`,
+          detectedLanguage: 'Russian',
+          aiDraftReply: `Привет, Елена! Огромное спасибо за теплый отзыв! Да, 1-часовой extended mix для фокуса уже на финальном сведении, выпустим на этой неделе! 👍`,
+          videoTitle: `${title} - Deep Focus Vibes`,
+        },
+        {
+          id: 'vc_3',
+          authorDisplayName: 'Dave Miller',
+          originalText: `This sound design is unreal! Can creators use this track in YouTube background videos without copyright claims?`,
+          detectedLanguage: 'English',
+          aiDraftReply: `Hey Dave! Absolutely, you're free to use it as background audio as long as you credit ${title} in the description! Thanks for the love! 🔥`,
+          videoTitle: `${title} - Studio Master Breakdown`,
+        },
+        {
+          id: 'vc_4',
+          authorDisplayName: 'Jasur Temirov',
+          originalText: `Shorts videongizdagi montaj va ovoz effektlari juda zo'r chiqibdi. Keyingi darslik qachon chiqadi?`,
+          detectedLanguage: 'Uzbek',
+          aiDraftReply: `Rahmat Jasurbek! Keyingi qism dushanba kuni soat 19:00 da chiqadi, qo'ng'iroqchani yoqib qo'ying! 🔔`,
+          videoTitle: `${title} - Viral Shorts Teaser`,
+        },
+      ];
+    }
+
+    return [
+      {
+        id: 'c1',
+        authorDisplayName: 'Sardor Alimov',
+        originalText: `${title} jamoasiga kattakon rahmat! Keyingi videoda qaysi mavzuni yoritasizlar? Montaj va algoritm sirlari bo'yicha chiqarilsa ajoyib bo'lardi!`,
+        detectedLanguage: 'Uzbek',
+        aiDraftReply: `Assalomu alaykum Sardorbek! Fikringiz uchun rahmat! Aynan YouTube algoritmlari va yuqori CTR sirlari bo'yicha to'liq qo'llanma ustida ishlayapmiz, tez orada chiqaramiz! 🚀`,
+        videoTitle: `${title}: 2026 Yangi Format`,
+      },
+      {
+        id: 'c2',
+        authorDisplayName: 'Алексей Смирнов',
+        originalText: `Отличный выпуск! Подскажите, какой софт используете для оптимизации тегов и кликабельности обложек?`,
+        detectedLanguage: 'Russian',
+        aiDraftReply: `Привет, Алексей! Используем связку TubePilot AI и Gemini Vision — анализирует контраст и CTR за пару секунд до публикации. Спасибо за поддержку! 👍`,
+        videoTitle: `${title}: Секреты YouTube Охватов`,
+      },
+      {
+        id: 'c3',
+        authorDisplayName: 'Marcus Vance',
+        originalText: `Insane video quality and pacing! How long did the production and color grading take for this upload?`,
+        detectedLanguage: 'English',
+        aiDraftReply: `Thanks Marcus! This one took about 18 hours between DaVinci Resolve grading and pacing cuts. Really glad you enjoyed the cinematic feel! 🔥`,
+        videoTitle: `${title}: Complete Studio Breakdown`,
+      },
+      {
+        id: 'c4',
+        authorDisplayName: 'Diyorbek Yusupov',
+        originalText: `Ushbu mavzu bo'yicha ko'p joydan ma'lumot izlagandim, eng aniq va tushunarli sizda bo'libdi. Kanalga omad!`,
+        detectedLanguage: 'Uzbek',
+        aiDraftReply: `Katta rahmat Diyorbek! Har doim amaliy va sifatli kontent tayyorlashga harakat qilamiz. Kuzatishda davom eting! 👍`,
+        videoTitle: `${title}: Asosiy Strategiya`,
+      },
+    ];
+  };
 
   const [comments, setComments] = useState<CommentItem[]>(() =>
-    getDefaultComments(connectedChannelTitle, connectedChannelHandle)
+    generateChannelComments(connectedChannelTitle, connectedChannelHandle)
   );
 
-  // Update comments when connected channel changes
+  // Sync comments whenever connectedChannelTitle changes
   useEffect(() => {
-    setComments(getDefaultComments(connectedChannelTitle, connectedChannelHandle));
+    setComments(generateChannelComments(connectedChannelTitle, connectedChannelHandle));
   }, [connectedChannelTitle, connectedChannelHandle]);
+
+  const syncChannelComments = async () => {
+    setIsSyncing(true);
+    await new Promise((r) => setTimeout(r, 650));
+    setComments(generateChannelComments(connectedChannelTitle, connectedChannelHandle));
+    setIsSyncing(false);
+  };
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
@@ -194,6 +253,15 @@ export function CommentInbox({ connectedChannelTitle = 'YouTube Kanali', connect
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={syncChannelComments}
+              disabled={isSyncing}
+              className="p-1.5 px-2.5 rounded-xl bg-dark-700 hover:bg-dark-600 text-gray-300 hover:text-white border border-dark-600 transition-all text-xs flex items-center gap-1.5 font-semibold"
+              title="YouTube kanaldan so'nggi izohlarni sinxronlash"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-malla-400 ${isSyncing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">{isSyncing ? 'Yuklanmoqda...' : 'Izohlarni Yangilash'}</span>
+            </button>
             <TelegramHelpButton featureKey="comment_copilot" label="Telegram Approvals" />
             <button
               onClick={() => setNewCommentModal(!newCommentModal)}

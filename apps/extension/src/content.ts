@@ -334,56 +334,80 @@
 
     const dashboardUrl = `${API_BASE_URL}/uz/dashboard`;
 
-    card.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;gap:8px;">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span style="font-size:15px;font-weight:900;color:#0284c7;">TubePilot</span>
-          <span style="font-size:13px;font-weight:700;color:#64748b;">·</span>
-          <span style="font-size:14px;font-weight:800;color:#f8fafc;">Quick channel stats</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <a href="${dashboardUrl}" target="_blank" style="font-size:12px;font-weight:700;color:#94a3b8;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
-            View all ⚙
-          </a>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(170px, 1fr));gap:10px;">
-        <!-- Box 1: Views gained (7 days) -->
-        <div style="padding:14px 16px;background:#182030;border-radius:10px;border:1px solid rgba(255,255,255,0.04);">
-          <span style="display:block;font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:6px;">Views gained (7 days)</span>
-          <div style="font-size:18px;font-weight:900;color:#fff;display:flex;align-items:center;gap:6px;">
-            <span>${weeklyViewsText}</span>
-            <span style="font-size:12px;font-weight:700;color:${weeklyViewsTrend.startsWith('+') ? '#34d399' : '#f87171'};">${weeklyViewsTrend}</span>
+    // VidIQ Rule: For very small channels (< 100 subscribers), show VidIQ's exact disclaimer banner!
+    if (numSubs < 100) {
+      card.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;gap:8px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:15px;font-weight:900;color:#0284c7;">TubePilot</span>
+            <span style="font-size:13px;font-weight:700;color:#64748b;">·</span>
+            <span style="font-size:14px;font-weight:800;color:#f8fafc;">Quick channel stats</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <a href="${dashboardUrl}" target="_blank" style="font-size:12px;font-weight:700;color:#94a3b8;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+              View all ⚙
+            </a>
           </div>
         </div>
-        <!-- Box 2: Podpischiki -->
-        <div style="padding:14px 16px;background:#182030;border-radius:10px;border:1px solid rgba(255,255,255,0.04);">
-          <span style="display:block;font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:6px;">Подписчики</span>
-          <div style="font-size:18px;font-weight:900;color:#fff;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-            <span>${activeSubs}</span>
-            <span style="font-size:11px;color:#34d399;font-weight:700;">${subGrowthPct}</span>
-            <span style="font-size:10px;background:rgba(255,255,255,0.08);color:#94a3b8;padding:2px 6px;border-radius:4px;font-weight:700;">Ranked ${globalRank}</span>
+        <div style="padding:28px 24px;background:#182030;border-radius:10px;border:1px solid rgba(255,255,255,0.04);text-align:center;">
+          <div style="font-size:24px;margin-bottom:8px;color:#f59e0b;">⚠</div>
+          <div style="font-size:14px;font-weight:700;color:#f1f5f9;line-height:1.6;max-width:720px;margin:0 auto;">
+            Channel data is not yet available. We're still expanding coverage for smaller channels and Shorts channels — please check back soon!
           </div>
         </div>
-        <!-- Box 3: Est. monthly earnings -->
-        <div style="padding:14px 16px;background:#182030;border-radius:10px;border:1px solid rgba(255,255,255,0.04);">
-          <span style="display:block;font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:6px;">Est. monthly earnings</span>
-          <div style="font-size:18px;font-weight:900;color:#fff;">
-            <span>${singleMonthlyEarnings}</span>
+      `;
+    } else {
+      card.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;gap:8px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:15px;font-weight:900;color:#0284c7;">TubePilot</span>
+            <span style="font-size:13px;font-weight:700;color:#64748b;">·</span>
+            <span style="font-size:14px;font-weight:800;color:#f8fafc;">Quick channel stats</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <a href="${dashboardUrl}" target="_blank" style="font-size:12px;font-weight:700;color:#94a3b8;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+              View all ⚙
+            </a>
           </div>
         </div>
-        <!-- Box 4: Avg. video length -->
-        <div style="padding:14px 16px;background:#182030;border-radius:10px;border:1px solid rgba(255,255,255,0.04);">
-          <span style="display:block;font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:6px;">Avg. video length</span>
-          <div style="font-size:18px;font-weight:900;color:#fff;">${avgVideoLength}</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(170px, 1fr));gap:10px;">
+          <!-- Box 1: Views gained (7 days) -->
+          <div style="padding:14px 16px;background:#182030;border-radius:10px;border:1px solid rgba(255,255,255,0.04);">
+            <span style="display:block;font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:6px;">Views gained (7 days)</span>
+            <div style="font-size:18px;font-weight:900;color:#fff;display:flex;align-items:center;gap:6px;">
+              <span>${weeklyViewsText}</span>
+              <span style="font-size:12px;font-weight:700;color:${weeklyViewsTrend.startsWith('+') ? '#34d399' : '#f87171'};">${weeklyViewsTrend}</span>
+            </div>
+          </div>
+          <!-- Box 2: Podpischiki -->
+          <div style="padding:14px 16px;background:#182030;border-radius:10px;border:1px solid rgba(255,255,255,0.04);">
+            <span style="display:block;font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:6px;">Подписчики</span>
+            <div style="font-size:18px;font-weight:900;color:#fff;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <span>${activeSubs}</span>
+              <span style="font-size:11px;color:#34d399;font-weight:700;">${subGrowthPct}</span>
+              <span style="font-size:10px;background:rgba(255,255,255,0.08);color:#94a3b8;padding:2px 6px;border-radius:4px;font-weight:700;">Ranked ${globalRank}</span>
+            </div>
+          </div>
+          <!-- Box 3: Est. monthly earnings -->
+          <div style="padding:14px 16px;background:#182030;border-radius:10px;border:1px solid rgba(255,255,255,0.04);">
+            <span style="display:block;font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:6px;">Est. monthly earnings</span>
+            <div style="font-size:18px;font-weight:900;color:#fff;">
+              <span>${singleMonthlyEarnings}</span>
+            </div>
+          </div>
+          <!-- Box 4: Avg. video length -->
+          <div style="padding:14px 16px;background:#182030;border-radius:10px;border:1px solid rgba(255,255,255,0.04);">
+            <span style="display:block;font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:6px;">Avg. video length</span>
+            <div style="font-size:18px;font-weight:900;color:#fff;">${avgVideoLength}</div>
+          </div>
+          <!-- Box 5: Upload frequency -->
+          <div style="padding:14px 16px;background:#182030;border-radius:10px;border:1px solid rgba(255,255,255,0.04);">
+            <span style="display:block;font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:6px;">Upload frequency</span>
+            <div style="font-size:18px;font-weight:900;color:#fff;">${uploadFreq}</div>
+          </div>
         </div>
-        <!-- Box 5: Upload frequency -->
-        <div style="padding:14px 16px;background:#182030;border-radius:10px;border:1px solid rgba(255,255,255,0.04);">
-          <span style="display:block;font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:6px;">Upload frequency</span>
-          <div style="font-size:18px;font-weight:900;color:#fff;">${uploadFreq}</div>
-        </div>
-      </div>
-    `;
+      `;
+    }
 
     // Inject blue "View channel stats" button in the channel header action buttons row
     const buttonsRow =

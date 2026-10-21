@@ -37,91 +37,38 @@ export function CommentInbox({ connectedChannelTitle = 'YouTube Kanali', connect
   const t = useTranslations('copilot');
 
   const [isSyncing, setIsSyncing] = useState(false);
+  const [comments, setComments] = useState<CommentItem[]>([]);
   const [filterMode, setFilterMode] = useState<'ALL' | 'UNANSWERED' | 'APPROVED'>('ALL');
-
-  const generateChannelComments = (title: string, handle: string): CommentItem[] => {
-    const isVelora = title.toLowerCase().includes('velora') || handle.toLowerCase().includes('velora');
-
-    if (isVelora) {
-      return [
-        {
-          id: 'vc_1',
-          authorDisplayName: 'Farrux Zokirov',
-          originalText: `Yolg'on Dunyo taronasidagi ayol vokali va bass qismi yurakka yetib boradi. Trekning to'liq 320kbps formatini qayerdan yuklab olsak bo'ladi?`,
-          detectedLanguage: 'Uzbek',
-          aiDraftReply: `Assalomu alaykum Farruxbek! Fikringiz uchun samimiy minnatdormiz! Trekning to'liq va original sifati tavsifdagi rasmiy havola va Telegram kanalimizda joylangan. Qo'llab-quvvatlaganingiz uchun rahmat! 🎧`,
-          videoTitle: `Yolg'on Dunyo (Kim do'st, kim begona)  AI MUSIC  VELORA`,
-        },
-        {
-          id: 'vc_2',
-          authorDisplayName: 'Madina Karimova',
-          originalText: `Sevasanmi taronasidagi mayin ovoz va lirik ma'no juda ta'sirli chiqibdi! Aynan shu uslubda yana yangi qo'shiqlar chiqaringlar, kutib qolamiz! ❤️`,
-          detectedLanguage: 'Uzbek',
-          aiDraftReply: `Assalomu alaykum Madina! E'tiboringiz va iliq fikrlaringiz uchun katta rahmat! Aynan shu kabi samimiy va mayin musiqalar ustida yangi relizlar tayyorlayapmiz, kuzatib boring! ✨`,
-          videoTitle: `"SEVASANMI" – Sevgi savoli... (Mayin ovoz va zamonaviy o'zbekona uslub)  AI MUSIC`,
-        },
-        {
-          id: 'vc_3',
-          authorDisplayName: 'Shohruh Rahimov',
-          originalText: `Qalb Sadolari trekidagi etnik ohanglar va ritm ajoyib uyg'unlashgan. Bu musiqani YouTube Shorts va Reels videolarimda ishlatsam bo'ladimi?`,
-          detectedLanguage: 'Uzbek',
-          aiDraftReply: `Salom Shohruh! Albatta, videolaringizda fon musiqasi sifatida bemalol foydalanishingiz mumkin, faqat tavsifda VELORA kanaliga havola qoldirib qo'ysangiz kifoya! Ijodga omad! 🔥`,
-          videoTitle: `DUNYO — Qalb Sadolari va Cheksiz Parvoz (Epik Etnik Qo‘shiq) VELORA AI MUSIC`,
-        },
-        {
-          id: 'vc_4',
-          authorDisplayName: 'Ulug\'bek Aliyev',
-          originalText: `Sani Sog'indim Jonim qo'shig'idagi bass va erkak ovozi sof o'zbekcha rap kayfiyatini beribdi. Yangi treklar kutamiz!`,
-          detectedLanguage: 'Uzbek',
-          aiDraftReply: `Katta rahmat Ulug'bek! Har bir qo'shiqda yurakdan his qilinadigan his-tuyg'ularni berishga harakat qilyapmiz. Tez orada yangi premyera chiqadi! 🎵`,
-          videoTitle: `Sani Sog‘indim Jonim — Yurakdagi Xotiralar  AI MUSIC`,
-        },
-      ];
-    }
-
-    return [
-      {
-        id: 'c1',
-        authorDisplayName: 'Sardor Alimov',
-        originalText: `${title} jamoasiga kattakon rahmat! Keyingi videoda qaysi mavzuni yoritasizlar? Montaj va algoritm sirlari bo'yicha chiqarilsa ajoyib bo'lardi!`,
-        detectedLanguage: 'Uzbek',
-        aiDraftReply: `Assalomu alaykum Sardorbek! Fikringiz uchun rahmat! Aynan YouTube algoritmlari va yuqori CTR sirlari bo'yicha to'liq qo'llanma ustida ishlayapmiz, tez orada chiqaramiz! 🚀`,
-        videoTitle: `${title}: 2026 Yangi Format`,
-      },
-      {
-        id: 'c2',
-        authorDisplayName: 'Алексей Смирнов',
-        originalText: `Отличный выпуск! Подскажите, какой софт используете для оптимизации тегов и кликабельности обложек?`,
-        detectedLanguage: 'Russian',
-        aiDraftReply: `Привет, Алексей! Используем связку TubePilot AI и Gemini Vision — анализирует контраст и CTR за пару секунд до публикации. Спасибо за поддержку! 👍`,
-        videoTitle: `${title}: Секреты YouTube Охватов`,
-      },
-      {
-        id: 'c3',
-        authorDisplayName: 'Marcus Vance',
-        originalText: `Insane video quality and pacing! How long did the production and color grading take for this upload?`,
-        detectedLanguage: 'English',
-        aiDraftReply: `Thanks Marcus! This one took about 18 hours between DaVinci Resolve grading and pacing cuts. Really glad you enjoyed the cinematic feel! 🔥`,
-        videoTitle: `${title}: Complete Studio Breakdown`,
-      },
-    ];
-  };
-
-  const [comments, setComments] = useState<CommentItem[]>(() =>
-    generateChannelComments(connectedChannelTitle, connectedChannelHandle)
-  );
-
-  // Sync comments whenever connectedChannelTitle changes
-  useEffect(() => {
-    setComments(generateChannelComments(connectedChannelTitle, connectedChannelHandle));
-  }, [connectedChannelTitle, connectedChannelHandle]);
 
   const syncChannelComments = async () => {
     setIsSyncing(true);
-    await new Promise((r) => setTimeout(r, 650));
-    setComments(generateChannelComments(connectedChannelTitle, connectedChannelHandle));
-    setIsSyncing(false);
+    try {
+      const res = await fetch(`/api/comments/sync?channel=${encodeURIComponent(connectedChannelHandle)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.comments)) {
+          const mapped: CommentItem[] = data.comments.map((c: any) => ({
+            id: c.id,
+            authorDisplayName: c.authorDisplayName,
+            originalText: c.originalText,
+            detectedLanguage: c.detectedLanguage || 'Uzbek',
+            aiDraftReply: `Assalomu alaykum ${c.authorDisplayName}! Fikringiz va e'tiboringiz uchun kattakon rahmat! 🚀`,
+            videoTitle: c.videoTitle,
+          }));
+          setComments(mapped);
+        }
+      }
+    } catch (err) {
+      console.error('[CommentInbox] Sync failed:', err);
+    } finally {
+      setIsSyncing(false);
+    }
   };
+
+  // Sync comments whenever connectedChannelHandle changes
+  useEffect(() => {
+    syncChannelComments();
+  }, [connectedChannelHandle]);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
@@ -313,8 +260,21 @@ export function CommentInbox({ connectedChannelTitle = 'YouTube Kanali', connect
         )}
 
         {/* Comments List */}
-        {comments.length === 0 ? (
-          <div className="text-center py-12 text-gray-500 text-xs">{t('empty')}</div>
+        {isSyncing ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center space-y-3">
+            <Loader2 className="w-6 h-6 text-sky-400 animate-spin" />
+            <p className="text-xs text-gray-400">YouTube'dan haqiqiy jonli izohlar yuklanmoqda...</p>
+          </div>
+        ) : comments.length === 0 ? (
+          <div className="text-center py-12 px-4 rounded-2xl bg-dark-900/50 border border-dark-800 text-gray-400 text-xs space-y-2">
+            <MessageSquare className="w-8 h-8 text-gray-600 mx-auto" />
+            <p className="font-semibold text-gray-300">
+              {connectedChannelHandle} kanalidagi ochiq videolarda yangi izoh topilmadi
+            </p>
+            <p className="text-[11px] text-gray-500 max-w-md mx-auto">
+              Agar YouTube Studio'da videolaringizda izohlar o'chirilgan bo'lsa ("Comments are turned off"), ular bu yerda ko'rinmaydi. Izohlar ochiq bo'lgan har qanday YouTube kanali ulanganda, ularning haqiqiy izohlari darhol shu yerda aks etadi.
+            </p>
+          </div>
         ) : (
           <div className="space-y-4">
             {comments.map((comment) => {

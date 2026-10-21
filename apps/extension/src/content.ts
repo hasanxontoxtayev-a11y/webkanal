@@ -9,7 +9,12 @@
  */
 
 (function () {
-  console.log('🚀 [TubePilot AI] Content script active on:', window.location.href);
+  // STRICT GUARD: Only run inside YouTube domains! Never run on Google Search or other sites.
+  if (!window.location.hostname.includes('youtube.com')) {
+    return;
+  }
+
+  console.log('🚀 [TubePilot AI] Content script active on YouTube:', window.location.href);
 
   const API_BASE_URL = 'https://www.tubepilotpro.com';
   const CHANNEL_CARD_ID = 'tubepilot-vidiq-channel-card';
@@ -23,6 +28,7 @@
   // Active channel currently being inspected on YouTube
   let currentAuditedData: any = null;
   let lastAuditedKey = '';
+  let renderedCardKey = '';
 
   function sendMessagePromise(msg: any): Promise<any> {
     return new Promise((resolve) => {
@@ -98,7 +104,7 @@
     };
   }
 
-  // Helper to parse numerical subscriber/view estimation for instant calculations
+  // Helper to parse numerical subscriber count for projections
   function parseSubscriberCount(str: string): number {
     if (!str) return 10000;
     const clean = str.replace(',', '.').toLowerCase();
@@ -115,7 +121,7 @@
   // ---------------------------------------------------------------------------
   function injectAlwaysVisibleBadge() {
     let badge = document.getElementById(FLOATING_BADGE_ID);
-    const targetParent = document.body || document.documentElement;
+    const targetParent = document.body;
     if (!targetParent) return;
 
     const detected = detectCurrentChannelInfo();
@@ -163,11 +169,15 @@
       targetParent.appendChild(badge);
     }
 
-    badge.innerHTML = `
+    // Only update innerHTML if display changed to prevent browser paint churn
+    const targetHTML = `
       <span style="font-size:16px;">🚀</span>
       <span>TubePilot AI</span>
       <span style="font-size:10px; background:#000; color:#fbbf24; padding:2px 8px; border-radius:10px; font-weight:800; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${activeDisplay}</span>
     `;
+    if (badge.innerHTML !== targetHTML) {
+      badge.innerHTML = targetHTML;
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -210,7 +220,7 @@
     const vphDisplay = currentAuditedData?.vph?.currentVph || '280 VPH';
     const scoreDisplay = currentAuditedData?.overallScore || 89;
 
-    bar.innerHTML = `
+    const barHTML = `
       <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;background:#0f172a;border:1px solid rgba(245,158,11,0.6);box-shadow:0 4px 15px rgba(0,0,0,0.5);font-size:12px;font-weight:700;color:#f1f5f9;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
         <span style="color:#fbbf24;font-weight:900;">🚀 TubePilot:</span>
         <span>👥 ${subsDisplay}</span>
@@ -221,6 +231,10 @@
         <span style="padding:2px 8px;border-radius:10px;background:rgba(16,185,129,0.25);color:#34d399;font-size:10px;font-weight:800;">🟢 Online</span>
       </div>
     `;
+
+    if (bar.innerHTML !== barHTML) {
+      bar.innerHTML = barHTML;
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -229,11 +243,11 @@
   function injectChannelStatsCard() {
     const detected = detectCurrentChannelInfo();
     if (!detected.isChannelPage) {
-      // Remove card if we navigate away from a channel page
       const existing = document.getElementById(CHANNEL_CARD_ID);
       if (existing) existing.remove();
       const existingBtn = document.getElementById(VIEW_STATS_BTN_ID);
       if (existingBtn) existingBtn.remove();
+      renderedCardKey = '';
       return;
     }
 
@@ -248,6 +262,8 @@
       document.querySelector('ytd-browse[page-subtype="channels"] #primary');
 
     if (!channelHeader) return;
+
+    const currentKey = `${detected.handle}_${detected.title}_${currentAuditedData ? 'audited' : 'dom'}`;
 
     let card = document.getElementById(CHANNEL_CARD_ID);
     if (!card) {
@@ -273,8 +289,12 @@
       }
     }
 
-    // Dynamic metrics computation for the current channel:
-    // If backend audit arrived, use exact YouTube API values; otherwise use DOM extracted metrics with accurate projections
+    // Only update innerHTML when the key has changed to avoid continuous reflows
+    if (renderedCardKey === currentKey) {
+      return;
+    }
+    renderedCardKey = currentKey;
+
     const activeTitle = currentAuditedData?.channelTitle || detected.title || 'YouTube Kanal';
     const activeHandle = currentAuditedData?.channelHandle || detected.handle || '';
     const activeSubs = currentAuditedData?.subscribers || detected.subscribers || 'Ma\'lumot olinmoqda...';
@@ -284,7 +304,6 @@
     const activeVph = currentAuditedData?.vph?.currentVph || '320 VPH';
     const peakVph = currentAuditedData?.vph?.peakVph || '1,150 VPH';
     
-    // Dynamic monetization estimation based on subs count
     let monthlyRange = '$45 – $380';
     let estRpm = '$1.85';
     if (currentAuditedData?.monetization) {
@@ -299,7 +318,6 @@
 
     const dashboardUrl = `${API_BASE_URL}/uz/dashboard`;
 
-    // Connected workspace info pill
     const workspacePill = connectedWorkspace?.title
       ? `<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;background:rgba(59,130,246,0.2);color:#60a5fa;border:1px solid rgba(59,130,246,0.3);">💼 Sizning kanalingiz: ${connectedWorkspace.title}</span>`
       : '';
@@ -343,7 +361,6 @@
       </div>
     `;
 
-    // Also inject blue button next to channel buttons
     const actionButtons =
       document.querySelector('ytd-tabbed-page-header #buttons') ||
       document.querySelector('#inner-header-container #buttons') ||
@@ -374,15 +391,18 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 4. VidIQ-Parity Video Badges (Dynamic per video)
+  // 4. VidIQ-Parity Video Badges (Throttled & Dynamic per video)
   // ---------------------------------------------------------------------------
   function injectVideoBadges() {
     const videoItems = document.querySelectorAll(
       'ytd-rich-item-renderer, ytd-video-renderer, ytd-grid-video-renderer, ytd-compact-video-renderer'
     );
 
-    videoItems.forEach((item, index) => {
-      if (item.querySelector('.tp-video-badge-container')) return;
+    // Limit to first 30 visible videos to keep DOM lightweight and super fast
+    const sliceCount = Math.min(videoItems.length, 30);
+    for (let index = 0; index < sliceCount; index++) {
+      const item = videoItems[index];
+      if (item.querySelector('.tp-video-badge-container')) continue;
 
       const metaBlock =
         item.querySelector('#details #meta') ||
@@ -391,7 +411,6 @@
         item.querySelector('#meta');
 
       if (metaBlock) {
-        // Dynamic realistic VPH and SEO based on video title length and index
         const videoTitle = item.querySelector('#video-title')?.textContent?.trim() || '';
         const titleSeed = videoTitle.length > 0 ? (videoTitle.charCodeAt(0) * 13 + videoTitle.length * 7) : index * 47;
         const itemVph = (120 + (titleSeed % 480)) + ' VPH';
@@ -428,7 +447,7 @@
 
         metaBlock.appendChild(badgeContainer);
       }
-    });
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -462,10 +481,10 @@
       const queryKey = detected.handle || detected.title;
       if (queryKey && queryKey !== lastAuditedKey) {
         lastAuditedKey = queryKey;
-        // Query server audit endpoint
         const res = await sendMessagePromise({ type: 'FETCH_AUDIT', query: queryKey });
         if (res?.success && res?.data?.data) {
           currentAuditedData = res.data.data;
+          renderedCardKey = ''; // trigger card re-render with audited server data
           renderAll();
         }
       }
@@ -473,45 +492,51 @@
   }
 
   // ---------------------------------------------------------------------------
-  // MutationObserver for Continuous YouTube SPA DOM Updates
+  // Safe Throttled Observer for YouTube SPA
   // ---------------------------------------------------------------------------
   function observe() {
     renderAll();
     syncWorkspaceData();
     syncActiveChannelAudit();
 
+    // Use requestAnimationFrame / debounce to never hang the main thread
+    let renderTimer: any = null;
+    const debouncedRender = () => {
+      if (renderTimer) return;
+      renderTimer = setTimeout(() => {
+        renderTimer = null;
+        renderAll();
+      }, 400);
+    };
+
     const observer = new MutationObserver(() => {
-      renderAll();
+      debouncedRender();
     });
 
-    observer.observe(document.documentElement, {
+    observer.observe(document.body || document.documentElement, {
       childList: true,
       subtree: true,
     });
 
     window.addEventListener('yt-navigate-finish', () => {
-      // Clear previous channel audit cache when navigating to a new URL
       currentAuditedData = null;
       lastAuditedKey = '';
+      renderedCardKey = '';
       setTimeout(() => {
         renderAll();
         syncActiveChannelAudit();
-      }, 250);
+      }, 300);
     });
 
     window.addEventListener('popstate', () => {
       currentAuditedData = null;
       lastAuditedKey = '';
+      renderedCardKey = '';
       setTimeout(() => {
         renderAll();
         syncActiveChannelAudit();
-      }, 250);
+      }, 300);
     });
-
-    setInterval(() => {
-      renderAll();
-      syncActiveChannelAudit();
-    }, 1500);
   }
 
   if (document.readyState === 'loading') {

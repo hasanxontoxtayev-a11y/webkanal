@@ -340,8 +340,8 @@
     card.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;gap:8px;">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span style="font-size:15px;font-weight:900;color:#38bdf8;">vidIQ</span>
-          <span style="font-size:13px;font-weight:700;color:#94a3b8;">·</span>
+          <span style="font-size:15px;font-weight:900;color:#0284c7;">TubePilot</span>
+          <span style="font-size:13px;font-weight:700;color:#64748b;">·</span>
           <span style="font-size:14px;font-weight:800;color:#f8fafc;">Quick channel stats</span>
         </div>
         <div style="display:flex;align-items:center;gap:12px;">
@@ -496,7 +496,8 @@
   // Master Render Function
   // ---------------------------------------------------------------------------
   function renderAll() {
-    injectAlwaysVisibleBadge();
+    const oldFloating = document.getElementById(FLOATING_BADGE_ID);
+    if (oldFloating) oldFloating.remove();
     injectTopMasthead();
     injectChannelStatsCard();
     injectVideoBadges();

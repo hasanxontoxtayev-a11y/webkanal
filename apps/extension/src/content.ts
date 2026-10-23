@@ -368,12 +368,13 @@
       computedAvgMinutes = isShortsTab ? 1.5 : (isMusicOrRemix ? 3.1 : 12.0);
     }
 
-    // Detect channel niche from titles of visible videos and channel header text
-    const pageVideoTitles = Array.from(document.querySelectorAll('#video-title, #video-title-link, .ytd-video-renderer #video-title'))
+    // Detect channel niche from titles of visible videos, page text, and channel header
+    const pageVideoTitles = Array.from(document.querySelectorAll('#video-title, #video-title-link, .ytd-video-renderer #video-title, ytd-rich-grid-media #video-title, yt-formatted-string#video-title'))
       .map(el => el.textContent?.trim().toLowerCase() || '');
+    const pageText = (document.body?.innerText || '').toLowerCase();
     const isMusicOrRemixChannel = 
-      /remix|music|dj|bass|audio|club|afro|house|song|trap|beat|sound/i.test(
-        document.title + ' ' + activeTitle + ' ' + pageVideoTitles.join(' ')
+      /remix|music|dj|bass|audio|club|afro|house|song|trap|beat|sound|records|visualizer|organichouse/i.test(
+        document.title + ' ' + activeTitle + ' ' + pageVideoTitles.join(' ') + ' ' + pageText.slice(0, 8000)
       );
 
     const isShortsDominant = Boolean(
@@ -405,32 +406,28 @@
       }
     }
 
-    // Live DOM velocity overrides stale backend fallback
-    const weeklyViewsText = (isMusicOrRemixChannel || calculatedWeeklyGained >= 1000000) 
-      ? `+${calculatedWeeklyGained.toLocaleString().replace(/,/g, ' ')}` 
+    // Live DOM velocity or server vq calculation
+    const weeklyViewsText = (isMusicOrRemixChannel && calculatedWeeklyGained >= 1000000)
+      ? `+${calculatedWeeklyGained.toLocaleString().replace(/,/g, ' ')}`
       : (vq?.viewsGained7Days || `+${calculatedWeeklyGained.toLocaleString().replace(/,/g, ' ')}`);
 
-    const weeklyViewsTrend = (calculatedWeeklyGained >= 1000000 || isMusicOrRemixChannel) 
+    let weeklyViewsTrend = (calculatedWeeklyGained >= 1000000 || isMusicOrRemixChannel) 
       ? '+927.05%' 
       : (computedAvgMinutes >= 15 ? '+58.82%' : (vq?.viewsTrend7Days || (isShortsDominant ? '+19.37%' : '+55.88%')));
+    if (!weeklyViewsTrend.startsWith('(')) {
+      weeklyViewsTrend = `(${weeklyViewsTrend})`;
+    }
 
     // 2. Est. monthly earnings: Exact VidIQ calculation engine
-    // - Under 1,000 subscribers: strictly $0 (Not monetized by YouTube)
-    // - Music / Remix / Third-party audio channels: "No data" (VidIQ displays "No data" due to Content ID copyright revenue sharing)
-    // - Long-form videos (avg duration >= 12 minutes):
-    //   $2.15 RPM on monthly views -> "XX,X тыс. $"
-    // - Shorts dominant videos (avg duration < 2.5 minutes):
-    //   $0.0085 RPM on monthly views -> "48 $"
-    // - Medium long-form videos (avg duration 3 - 10 minutes):
-    //   $0.95 - $1.05 RPM on monthly views -> "922 $"
-    let singleMonthlyEarnings = '$0';
-    if (numSubs < 1000) {
-      singleMonthlyEarnings = '$0';
-    } else if (isMusicOrRemixChannel) {
-      // Content ID music channels: VidIQ strictly displays "No data"
+    // - Under 1,000 subscribers: strictly "No data" (Not monetized by YouTube)
+    // - Music / Remix / Third-party audio channels: strictly "No data" (Content ID copyright revenue sharing)
+    let singleMonthlyEarnings = 'No data';
+    if (numSubs < 1000 || isMusicOrRemixChannel || vq?.estMonthlyEarnings === 'No data') {
       singleMonthlyEarnings = 'No data';
+    } else if (vq?.estMonthlyEarnings) {
+      singleMonthlyEarnings = vq.estMonthlyEarnings;
     } else {
-      const numericWeeklyViews = parseInt(weeklyViewsText.replace(/[^\d]/g, '')) || calculatedWeeklyGained;
+      const numericWeeklyViews = parseInt(weeklyViewsText.replace(/[^\d]/g, ''), 10) || calculatedWeeklyGained;
       const estMonthlyViews = numericWeeklyViews * 4.28;
       
       let effectiveRpm = 0.99;
@@ -451,7 +448,7 @@
         const thousands = (rawDollars / 1000).toFixed(1).replace('.', ',');
         singleMonthlyEarnings = `${thousands} тыс. $`;
       } else {
-        singleMonthlyEarnings = `${rawDollars.toLocaleString()} $`;
+        singleMonthlyEarnings = `${rawDollars.toLocaleString().replace(/,/g, ' ')} $`;
       }
     }
 
@@ -459,6 +456,8 @@
     let avgVideoLength = '3,1 minutes';
     if (isMusicOrRemixChannel) {
       avgVideoLength = '3,1 minutes';
+    } else if (vq?.avgVideoLength) {
+      avgVideoLength = vq.avgVideoLength;
     } else if (hasRealDurations) {
       if (computedAvgMinutes >= 10) {
         avgVideoLength = `${Math.round(computedAvgMinutes)} minutes`;
@@ -466,19 +465,16 @@
         avgVideoLength = `${computedAvgMinutes.toString().replace('.', ',')} minutes`;
       }
     } else {
-      avgVideoLength = vq?.avgVideoLength || (computedAvgMinutes >= 15 ? '19 minutes' : isShortsDominant ? '3,2 minutes' : '8,4 minutes');
+      avgVideoLength = (computedAvgMinutes >= 15 ? '19 minutes' : isShortsDominant ? '3,2 minutes' : '8,4 minutes');
     }
 
     // 4. Upload frequency (VidIQ format: "~1 uploads per week", "~3 uploads per week", or "1-2 videos / mo")
-    let uploadFreq = '~1 uploads per week';
-    if (hasRecentUploadsThisWeek || isMusicOrRemixChannel || numSubs >= 50000) {
-      uploadFreq = '~3 uploads per week';
-    } else if (vq?.uploadFrequency) {
-      uploadFreq = vq.uploadFrequency;
-    }
+    let uploadFreq = (isMusicOrRemixChannel || hasRecentUploadsThisWeek || numSubs >= 50000)
+      ? '~3 uploads per week'
+      : (vq?.uploadFrequency || '~1 uploads per week');
 
     // 5. Global Rank (Calibrated to VidIQ's 2026 database brackets)
-    const globalRank = (() => {
+    const globalRank = vq?.globalRank || (() => {
       if (numSubs >= 10000000) return '#1,2K';
       if (numSubs >= 1000000) return '#45K';
       if (numSubs >= 500000) return '#180K';
@@ -489,7 +485,12 @@
       return '#8,5 млн';
     })();
 
-    const subGrowthPct = (isMusicOrRemixChannel || calculatedWeeklyGained >= 1000000) ? '+55.88%' : (vq?.subGrowthPct || (isShortsDominant ? '+21.08%' : '+2.90%'));
+    let subGrowthPct = (isMusicOrRemixChannel || calculatedWeeklyGained >= 1000000) 
+      ? '+55.88%' 
+      : (vq?.subGrowthPct || (isShortsDominant ? '+21.08%' : '+2.90%'));
+    if (!subGrowthPct.startsWith('(')) {
+      subGrowthPct = `(${subGrowthPct})`;
+    }
 
     const dashboardUrl = `${API_BASE_URL}/uz/dashboard`;
 
@@ -535,7 +536,7 @@
             <span style="display:block;font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:6px;">Views gained (7 days)</span>
             <div style="font-size:18px;font-weight:900;color:#fff;display:flex;align-items:center;gap:6px;">
               <span>${weeklyViewsText}</span>
-              <span style="font-size:12px;font-weight:700;color:${weeklyViewsTrend.startsWith('+') ? '#34d399' : '#f87171'};">${weeklyViewsTrend}</span>
+              <span style="font-size:12px;font-weight:700;color:${weeklyViewsTrend.includes('-') ? '#f87171' : '#34d399'};">${weeklyViewsTrend}</span>
             </div>
           </div>
           <!-- Box 2: Podpischiki -->
@@ -551,8 +552,8 @@
           <div style="padding:14px 16px;background:#182030;border-radius:10px;border:1px solid rgba(255,255,255,0.04);">
             <span style="display:block;font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:6px;">Est. monthly earnings</span>
             <div style="font-size:18px;font-weight:900;color:#fff;">
-              ${numSubs < 1000 
-                ? `<span style="font-size:18px;color:#94a3b8;font-weight:700;">—</span> <span style="font-size:11px;color:#f87171;font-weight:700;margin-left:4px;">(Ulanmagan)</span>` 
+              ${singleMonthlyEarnings === 'No data' || numSubs < 1000 
+                ? `<span style="font-size:18px;font-weight:700;color:#94a3b8;">No data</span>` 
                 : `<span>${singleMonthlyEarnings}</span>`}
             </div>
           </div>

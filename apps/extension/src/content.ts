@@ -358,7 +358,7 @@
 
     // Dynamic VidIQ Parity Metrics computation: prioritize live VidIQ card if active, else audited
     const liveVq = extractVidIqLiveDomStats();
-    const currentKey = `${detected.handle}_${detected.title}_${currentAuditedData ? 'audited' : 'dom'}_${liveVq?.viewsGained7Days || 'none'}`;
+    const currentKey = `${detected.handle}_${detected.title}_${currentAuditedData ? 'audited' : 'dom'}_${liveVq?.viewsGained7Days || 'none'}_${liveVq?.estMonthlyEarnings || 'none'}`;
 
     let card = document.getElementById(CHANNEL_CARD_ID);
     if (!card) {

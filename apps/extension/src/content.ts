@@ -280,6 +280,9 @@
         color: #f1f5f9 !important;
         z-index: 10 !important;
         display: block !important;
+        width: calc(100% - 48px) !important;
+        max-width: calc(100% - 48px) !important;
+        box-sizing: border-box !important;
       `;
 
       if (channelHeader.nextSibling) {

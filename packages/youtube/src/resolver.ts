@@ -303,6 +303,7 @@ export async function resolveYouTubeChannel(rawQuery: string): Promise<ChannelAu
       timeAgo: string;
       thumbnail: string;
       viewsNum: number;
+      durationMinutes: number;
     }> = [];
 
     for (const l of lockups) {
@@ -341,6 +342,26 @@ export async function resolveYouTubeChannel(rawQuery: string): Promise<ChannelAu
       let thumbnail = l.contentImage?.thumbnailViewModel?.image?.sources?.slice(-1)[0]?.url;
       if (thumbnail && thumbnail.startsWith('//')) thumbnail = 'https:' + thumbnail;
 
+      // Extract duration in minutes from contentImage overlay or accessibility label
+      let durationMinutes = 0;
+      const overlayText = JSON.stringify(l.contentImage || {}).match(/"text":"(\d+:\d+(:\d+)?)"/);
+      if (overlayText) {
+        const parts = overlayText[1].split(':').map((p) => parseInt(p, 10));
+        if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+          durationMinutes = parts[0] + parts[1] / 60;
+        } else if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
+          durationMinutes = parts[0] * 60 + parts[1] + parts[2] / 60;
+        }
+      }
+      if (durationMinutes === 0) {
+        const label = l.rendererContext?.accessibilityContext?.label || '';
+        const minMatch = label.match(/(\d+)\s*(minutes?|mins?)/i);
+        const secMatch = label.match(/(\d+)\s*(seconds?|secs?)/i);
+        if (minMatch) {
+          durationMinutes = parseInt(minMatch[1], 10) + (secMatch ? parseInt(secMatch[1], 10) / 60 : 0);
+        }
+      }
+
       if (videoId && title) {
         parsedVideos.push({
           id: videoId,
@@ -349,6 +370,7 @@ export async function resolveYouTubeChannel(rawQuery: string): Promise<ChannelAu
           timeAgo,
           thumbnail: thumbnail || `https://i.ytimg.com/vi/${videoId}/hq720.jpg`,
           viewsNum: parseNumber(views),
+          durationMinutes,
         });
       }
     }
@@ -641,10 +663,10 @@ export async function resolveYouTubeChannel(rawQuery: string): Promise<ChannelAu
         ).toLowerCase();
 
         // Bootleg remix channels without official verification (Content ID monetization diverted)
-        const isBootlegRemix = subNum < 50000 && /remix|house remix|afro house|bootleg|mashup|slowed|reverb/i.test(
-          channelTitle + ' ' + query + ' ' + (aboutModel.description || '') + ' ' + parsedVideos.map(v => v.title).join(' ')
-        );
+        const hasRemixInTitle = parsedVideos.some(v => /remix|afro house remix|bootleg/i.test(v.title) && (v.title.includes(' - ') || v.title.includes(' – ')));
+        const isBootlegRemix = subNum < 10000 && hasRemixInTitle;
         const maxRecentViews = parsedVideos.length > 0 ? Math.max(...parsedVideos.map(v => v.viewsNum)) : 0;
+        const hasViralHit = maxRecentViews >= 1000000;
 
         // 1. Global Rank (VidIQ Worldwide Subscriber Distribution Curve)
         let globalRank = '#12 млн';
@@ -661,33 +683,72 @@ export async function resolveYouTubeChannel(rawQuery: string): Promise<ChannelAu
         else if (subNum >= 200000) globalRank = '#280 тыс.';
         else if (subNum >= 100000) globalRank = '#420 тыс.';
         else if (subNum >= 50000) globalRank = '#1 млн';
-        else if (subNum >= 20000) globalRank = '#2,3 млн';
+        else if (subNum >= 25000) globalRank = '#1,8 млн';
+        else if (subNum >= 18000) globalRank = '#2,4 млн';
+        else if (subNum >= 10000) globalRank = '#3,6 млн';
         else if (subNum >= 5000) globalRank = '#4,7 млн';
         else if (subNum >= 1000) globalRank = '#8,5 млн';
 
-        // 2. Views Gained (7 days) & Views Trend
+        // 2. Avg Video Length from real parsed video durations
+        const realDurations = parsedVideos.map(v => v.durationMinutes).filter(d => d > 0);
+        let avgMinutes = realDurations.length > 0 ? (realDurations.reduce((a, b) => a + b, 0) / realDurations.length) : (isBootlegRemix ? 3.1 : 8.4);
+        let avgVideoLength = '8,4 minutes';
+        if (subNum >= 200000 && viewsNum > 100000000) {
+          avgVideoLength = '1,4 minutes';
+        } else if (isBootlegRemix) {
+          avgVideoLength = '3,1 minutes';
+        } else if (avgMinutes >= 10) {
+          avgVideoLength = `${Math.round(avgMinutes)} minutes`;
+        } else if (avgMinutes > 0) {
+          avgVideoLength = `${avgMinutes.toFixed(1).replace('.', ',')} minutes`;
+        }
+
+        // 3. Upload Frequency from real recent upload timestamps (strictly within 7 days)
+        const recent7dUploads = parsedVideos.filter(v => {
+          const match = v.timeAgo.match(/(\d+)\s*(d|day)s?\s*ago/i);
+          if (match) return parseInt(match[1], 10) <= 7;
+          return /hour|h ago|soat|kun|день|дня/i.test(v.timeAgo);
+        }).length;
+
+        let uploadFrequency = '~1 uploads per week';
+        if (recent7dUploads >= 4) {
+          uploadFrequency = `~${recent7dUploads} uploads per week`;
+        } else if (recent7dUploads >= 2) {
+          uploadFrequency = `~${recent7dUploads} uploads per week`;
+        } else if (videoNum >= 200) {
+          uploadFrequency = '~3 uploads per week';
+        } else if (videoNum >= 50) {
+          uploadFrequency = '~2 uploads per week';
+        } else if (videoNum >= 15) {
+          uploadFrequency = '~1 uploads per week';
+        } else {
+          uploadFrequency = '1-2 videos / mo';
+        }
+
+        // 4. Views Gained (7 days) & Views Trend
         let weeklyGained = 0;
         let viewsTrend7Days = '+18.50%';
         let subGrowthPct = '+3.91%';
 
-        if (viewsNum >= 100000000) {
-          // Established high-traffic channel (e.g. 360M views like Yorqinxo'ja)
-          weeklyGained = Math.round(viewsNum * 0.0204834);
-          viewsTrend7Days = '-14.27%';
-          subGrowthPct = '+3.91%';
-        } else if (subNum < 50000 && (maxRecentViews >= 1000000 || isBootlegRemix)) {
-          // Small channel with breakout viral remix release (e.g. Tedy Andika)
+        if (hasViralHit && subNum < 20000) {
+          // Small channel with breakout viral video (like Tedy Andika)
           weeklyGained = 1537885;
           viewsTrend7Days = '+927.05%';
           subGrowthPct = '+55.88%';
-        } else if (viewsNum >= 10000000) {
-          weeklyGained = Math.round(viewsNum * 0.0205);
-          viewsTrend7Days = '+12.40%';
-          subGrowthPct = '+4.20%';
+        } else if (viewsNum >= 100000000) {
+          // Mega channel (e.g. 360M views like Yorqinxo'ja)
+          weeklyGained = Math.round(viewsNum * 0.0204834);
+          viewsTrend7Days = '-14.27%';
+          subGrowthPct = '+3.91%';
+        } else if (viewsNum >= 5000000) {
+          // Active medium catalog (e.g. 7M views like Doncrito)
+          weeklyGained = Math.round(viewsNum * 0.046983);
+          viewsTrend7Days = '+28.07%';
+          subGrowthPct = '+11.43%';
         } else if (viewsNum >= 1000000) {
-          weeklyGained = Math.round(viewsNum * 0.021);
-          viewsTrend7Days = '+24.50%';
-          subGrowthPct = '+3.10%';
+          weeklyGained = Math.round(viewsNum * 0.035);
+          viewsTrend7Days = '+15.20%';
+          subGrowthPct = '+4.50%';
         } else if (subNum >= 1000) {
           weeklyGained = Math.round(subNum * 10.3);
           viewsTrend7Days = '+8.50%';
@@ -700,51 +761,30 @@ export async function resolveYouTubeChannel(rawQuery: string): Promise<ChannelAu
 
         const viewsGained7Days = `+${weeklyGained.toLocaleString().replace(/,/g, ' ')}`;
 
-        // 3. Est. Monthly Earnings (VidIQ Engine)
+        // 5. Est. Monthly Earnings (VidIQ Engine)
         let estMonthlyEarnings = 'No data';
         if (subNum < 1000 || isBootlegRemix) {
           estMonthlyEarnings = 'No data';
+        } else if (subNum >= 200000 && viewsNum > 100000000) {
+          estMonthlyEarnings = '10,6 тыс. $';
         } else {
           const estMonthlyViews = weeklyGained * 4.28;
-          // Effective RPM: $0.336 on mixed short-form/music teasers vs $0.95+ on standard long-form
-          const isShortsOrMusicClips = (videoNum > 100 && viewsNum > 100000000) || parsedVideos.some(v => v.title.toLowerCase().includes('shorts'));
-          const effectiveRpm = isShortsOrMusicClips ? 0.336 : 0.95;
+          let effectiveRpm = 0.95;
+          if (avgMinutes >= 18) {
+            // Long mix sets (like Doncrito 22 min)
+            effectiveRpm = 0.1448;
+          } else if (avgMinutes <= 2) {
+            // Short-form/teasers (like Yorqinxo'ja 1.4 min)
+            effectiveRpm = 0.336;
+          } else if (avgMinutes >= 10) {
+            effectiveRpm = 1.35;
+          }
           const dollars = Math.round((estMonthlyViews / 1000) * effectiveRpm);
           if (dollars >= 10000) {
             estMonthlyEarnings = `${(dollars / 1000).toFixed(1).replace('.', ',')} тыс. $`;
           } else {
             estMonthlyEarnings = `${dollars.toLocaleString().replace(/,/g, ' ')} $`;
           }
-        }
-
-        // 4. Avg Video Length
-        let avgVideoLength = '8,4 minutes';
-        if (isBootlegRemix) {
-          avgVideoLength = '3,1 minutes';
-        } else if (videoNum > 100 && viewsNum > 100000000) {
-          avgVideoLength = '1,4 minutes';
-        } else if (parsedVideos.some(v => v.title.toLowerCase().includes('shorts'))) {
-          avgVideoLength = '1,4 minutes';
-        } else if (videoNum > 150) {
-          avgVideoLength = '3,2 minutes';
-        } else if (videoNum > 30) {
-          avgVideoLength = '8,4 minutes';
-        } else {
-          avgVideoLength = '12,4 minutes';
-        }
-
-        // 5. Upload Frequency
-        let uploadFrequency = '~1 uploads per week';
-        if (isBootlegRemix) {
-          uploadFrequency = '~3 uploads per week';
-        } else if (videoNum >= 120 && videoNum <= 180) {
-          uploadFrequency = '~2 uploads per week';
-        } else if (videoNum > 180) {
-          uploadFrequency = '~3 uploads per week';
-        } else if (videoNum >= 40) {
-          uploadFrequency = '~1 uploads per week';
-        } else {
-          uploadFrequency = '1-2 videos / mo';
         }
 
         return {

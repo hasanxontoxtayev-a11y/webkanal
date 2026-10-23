@@ -251,35 +251,35 @@
     uploadFrequency?: string;
   } | null {
     try {
-      // Find any element containing Quick channel stats from vidIQ
-      const candidates = Array.from(document.querySelectorAll('*')).filter((el) => {
-        if (el.id?.includes('tubepilot')) return false;
-        const text = el.textContent || '';
-        return (
-          text.includes('Quick channel stats') &&
-          (text.includes('vidIQ') || text.includes('vidiq') || el.className?.toString().toLowerCase().includes('vidiq'))
-        );
-      });
-
-      if (candidates.length === 0) return null;
-
-      // Find the card container that holds the boxes
+      // Find any element containing "Views gained" on the page that is NOT created by TubePilot
+      const allElements = Array.from(document.querySelectorAll('div, section, ytd-browse'));
       let cardRoot: Element | null = null;
-      for (const cand of candidates) {
-        let curr: Element | null = cand;
-        for (let i = 0; i < 6; i++) {
-          if (!curr) break;
-          const t = curr.textContent || '';
-          if (
-            (t.includes('Views gained') || t.includes('views gained')) &&
-            (t.includes('Upload frequency') || t.includes('upload frequency') || t.includes('Avg. video length'))
-          ) {
-            cardRoot = curr;
+
+      for (const el of allElements) {
+        if (el.id?.includes('tubepilot')) continue;
+        const text = el.textContent || '';
+        // VidIQ card always contains both "Views gained" and ("Upload frequency" or "Avg. video length")
+        if (
+          (text.includes('Views gained') || text.includes('views gained')) &&
+          (text.includes('Upload frequency') || text.includes('Avg. video length'))
+        ) {
+          // Check that this is a leaf-like container, not document.body
+          if (el.children.length >= 2 && el.children.length <= 15) {
+            cardRoot = el;
             break;
           }
-          curr = curr.parentElement;
         }
-        if (cardRoot) break;
+      }
+
+      if (!cardRoot) {
+        // Fallback: look for any element containing "Quick channel stats" not by tubepilot
+        for (const el of allElements) {
+          if (el.id?.includes('tubepilot')) continue;
+          if (el.textContent?.includes('Quick channel stats')) {
+            cardRoot = el.parentElement || el;
+            break;
+          }
+        }
       }
 
       if (!cardRoot) return null;

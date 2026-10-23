@@ -811,7 +811,38 @@ bot.on("message:text", async (ctx) => {
 });
 
 // -----------------------------------------------------------------------------
-// 10. BOT RUNTIME LAUNCHER WITH OFFICIAL TELEGRAM MENU BUTTONS
+// 10. BACKGROUND AI COMMENT COPILOT MONITOR (Auto-Sync & Instant Alert)
+// -----------------------------------------------------------------------------
+async function runCommentAutoMonitor() {
+  try {
+    const users = await prisma.user.findMany({
+      where: { telegramChatId: { not: null } },
+      include: { channel: true },
+    });
+
+    for (const u of users) {
+      if (!u.telegramChatId) continue;
+      const targetHandle = u.channel?.customUrl || '@velora-p5n';
+
+      const dashboardBase = getDashboardUrl();
+      const syncUrl = `${dashboardBase}/api/comments/sync?channel=${encodeURIComponent(targetHandle)}`;
+      
+      try {
+        await fetch(syncUrl);
+      } catch (e) {
+        // Fallback: in case next server is running on localhost:3001 or remote
+        try {
+          await fetch(`http://localhost:3001/api/comments/sync?channel=${encodeURIComponent(targetHandle)}`);
+        } catch {}
+      }
+    }
+  } catch (err) {
+    console.warn("[Auto-Comment Monitor] Loop notice:", err);
+  }
+}
+
+// -----------------------------------------------------------------------------
+// 11. BOT RUNTIME LAUNCHER WITH OFFICIAL TELEGRAM MENU BUTTONS
 // -----------------------------------------------------------------------------
 if (!process.env.NEXT_RUNTIME) {
   console.log("Connecting TubePilot AI Telegram Bot runtime...");
@@ -827,6 +858,9 @@ if (!process.env.NEXT_RUNTIME) {
   bot.start({
     onStart: (botInfo) => {
       console.log(`🚀 TubePilot AI Telegram Bot is online and listening! Username: @${botInfo.username} (ID: ${botInfo.id})`);
+      // Start real-time background comment polling every 30 seconds
+      setInterval(runCommentAutoMonitor, 30000);
+      runCommentAutoMonitor();
     },
   }).catch((err) => {
     console.error("❌ Failed to start TubePilot AI Telegram Bot:", err);

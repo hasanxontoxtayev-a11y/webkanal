@@ -25,13 +25,13 @@ async function fetchLiveYouTubeComments(handleOrQuery: string): Promise<RealYouT
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
         'Accept-Language': 'uz-UZ,uz;q=0.9,ru;q=0.8,en;q=0.7',
       },
-      next: { revalidate: 180 },
+      next: { revalidate: 60 },
     });
 
     if (channelRes.ok) {
       const html = await channelRes.text();
       const matches = [...html.matchAll(/\/watch\?v=([a-zA-Z0-9_-]{11})/g)];
-      const uniqueIds = [...new Set(matches.map((m) => m[1]))].slice(0, 3);
+      const uniqueIds = [...new Set(matches.map((m) => m[1]))].slice(0, 10);
 
       for (const vid of uniqueIds) {
         videoList.push({ id: vid, title: `${cleanHandle} Video` });
@@ -53,7 +53,7 @@ async function fetchLiveYouTubeComments(handleOrQuery: string): Promise<RealYouT
       if (sRes.ok) {
         const sHtml = await sRes.text();
         const matches = [...sHtml.matchAll(/\/watch\?v=([a-zA-Z0-9_-]{11})/g)];
-        const uniqueIds = [...new Set(matches.map((m) => m[1]))].slice(0, 3);
+        const uniqueIds = [...new Set(matches.map((m) => m[1]))].slice(0, 10);
         for (const vid of uniqueIds) {
           videoList.push({ id: vid, title: `${handleOrQuery} Upload` });
         }
@@ -69,7 +69,7 @@ async function fetchLiveYouTubeComments(handleOrQuery: string): Promise<RealYouT
 
   // 2. For each video, extract InnerTube API Key & continuation token to get real live comments
   for (const video of videoList) {
-    if (collectedComments.length >= 6) break;
+    if (collectedComments.length >= 15) break;
 
     try {
       const watchRes = await fetch(`https://www.youtube.com/watch?v=${video.id}`, {
@@ -91,8 +91,8 @@ async function fetchLiveYouTubeComments(handleOrQuery: string): Promise<RealYouT
       const titleMatch = html.match(/<title>(.*?)<\/title>/);
       const currentVideoTitle = titleMatch ? titleMatch[1].replace('- YouTube', '').trim() : video.title;
 
-      const keyMatch = html.match(/"INNERTUBE_API_KEY":"(.*?)"/);
-      const contMatch = html.match(/"continuationCommand":\{"token":"(.*?)"/);
+      const keyMatch = html.match(/"INNERTUBE_API_KEY":"([^"]+)"/);
+      const contMatch = html.match(/"continuationCommand":\{"token":"([^"]+)"/);
 
       if (!keyMatch || !contMatch) continue;
 
@@ -121,7 +121,7 @@ async function fetchLiveYouTubeComments(handleOrQuery: string): Promise<RealYouT
       if (!commentRes.ok) continue;
       const data = await commentRes.json();
 
-      // Extract comments from entityBatchUpdate mutations
+      // Strategy A: mutations format
       const mutations = data?.frameworkUpdates?.entityBatchUpdate?.mutations;
       if (Array.isArray(mutations)) {
         for (const m of mutations) {
@@ -132,7 +132,6 @@ async function fetchLiveYouTubeComments(handleOrQuery: string): Promise<RealYouT
           const cid = payload?.properties?.commentId || `c_${Math.random().toString(36).slice(2, 9)}`;
 
           if (text && text.length > 2) {
-            // Detect language
             const hasCyrillic = /[а-яё]/i.test(text);
             const isUzbekLatin = /(kerak|boladi|rahmat|qachon|videoni|chiqaring|zor|zo'r|yahshi|yaxshi)/i.test(text);
             const detectedLanguage = hasCyrillic ? 'Russian' : isUzbekLatin ? 'Uzbek' : 'English';
@@ -145,8 +144,40 @@ async function fetchLiveYouTubeComments(handleOrQuery: string): Promise<RealYouT
               videoTitle: currentVideoTitle,
               publishedTime: time,
             });
+          }
+        }
+      }
 
-            if (collectedComments.length >= 8) break;
+      // Strategy B: onResponseReceivedEndpoints continuation renderer format
+      const endpoints = data?.onResponseReceivedEndpoints;
+      if (Array.isArray(endpoints)) {
+        for (const ep of endpoints) {
+          const actions = ep?.appendContinuationItemsAction?.continuationItems || ep?.reloadContinuationItemsCommand?.continuationItems;
+          if (Array.isArray(actions)) {
+            for (const item of actions) {
+              const renderer = item?.commentThreadRenderer?.comment?.commentRenderer;
+              if (renderer) {
+                const text = renderer?.contentText?.runs?.map((r: any) => r.text).join('')?.trim() || '';
+                const author = renderer?.authorText?.simpleText || 'YouTube Viewer';
+                const time = renderer?.publishedTimeText?.runs?.map((r: any) => r.text).join('') || '';
+                const cid = renderer?.commentId || `c_${Math.random().toString(36).slice(2, 9)}`;
+
+                if (text && text.length > 1) {
+                  const hasCyrillic = /[а-яё]/i.test(text);
+                  const isUzbekLatin = /(kerak|boladi|rahmat|qachon|videoni|chiqaring|zor|zo'r|yahshi|yaxshi)/i.test(text);
+                  const detectedLanguage = hasCyrillic ? 'Russian' : isUzbekLatin ? 'Uzbek' : 'English';
+
+                  collectedComments.push({
+                    id: cid,
+                    authorDisplayName: author,
+                    originalText: text,
+                    detectedLanguage,
+                    videoTitle: currentVideoTitle,
+                    publishedTime: time,
+                  });
+                }
+              }
+            }
           }
         }
       }
@@ -172,49 +203,103 @@ export async function GET(req: NextRequest) {
       try {
         const user = await prisma.user.findFirst({
           where: { telegramChatId: { not: null } },
+          include: { channel: true },
         });
 
         if (user && user.telegramChatId) {
-          // Check if we need to dispatch a sample comment notification
-          const firstComment = comments[0];
-          const botToken = process.env.TELEGRAM_BOT_TOKEN;
+          const botToken = process.env.TELEGRAM_BOT_TOKEN || '8793624781:AAH50ARJWxJKAS2NTWaeC9ijPaiipTY73P4';
 
-          if (botToken) {
+          for (const item of comments) {
+            // Find or create video record
+            const channelId = user.channel?.id || 'UC_workspace_channel';
+            
+            // Upsert channel if not exists
+            await prisma.youTubeChannel.upsert({
+              where: { id: channelId },
+              create: {
+                id: channelId,
+                userId: user.id,
+                title: user.channel?.title || channel,
+                customUrl: channel,
+                encryptedAccessToken: 'token',
+                encryptedRefreshToken: 'refresh',
+                tokenExpiresAt: new Date(Date.now() + 365 * 86400000),
+                tokenScope: 'read',
+              },
+              update: {},
+            });
+
+            const vidId = `vid_${Math.abs(item.videoTitle.split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0)).toString(36)}`;
+            await prisma.youtubeVideo.upsert({
+              where: { id: vidId },
+              create: {
+                id: vidId,
+                channelId,
+                title: item.videoTitle,
+                publishedAt: new Date(),
+                thumbnailDefaultUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120',
+              },
+              update: {
+                title: item.videoTitle,
+              },
+            });
+
+            // Check if comment already exists in DB
+            const existing = await prisma.commentThread.findUnique({
+              where: { id: item.id },
+            });
+
             const draftReply =
-              firstComment.detectedLanguage === 'Russian'
-                ? `Привет, ${firstComment.authorDisplayName}! Большое спасибо за поддержку и отзыв! 👍`
-                : firstComment.detectedLanguage === 'English'
-                ? `Hey ${firstComment.authorDisplayName}! Thanks so much for watching and for your awesome feedback! 🚀`
-                : `Assalomu alaykum ${firstComment.authorDisplayName}! Fikringiz va e'tiboringiz uchun kattakon rahmat! 🚀`;
+              item.detectedLanguage === 'Russian'
+                ? `Привет, ${item.authorDisplayName}! Большое спасибо за поддержку и отзыв! 👍`
+                : item.detectedLanguage === 'English'
+                ? `Hey ${item.authorDisplayName}! Thanks so much for watching and for your awesome feedback! 🚀`
+                : `Assalomu alaykum ${item.authorDisplayName}! Fikringiz va e'tiboringiz uchun kattakon rahmat! 🚀`;
 
-            const keyboard = {
-              inline_keyboard: [
-                [
-                  { text: '✅ Tasdiqlash / Approve', callback_data: `approve_comment:${firstComment.id}` },
-                  { text: '🗑️ Bekor qilish / Discard', callback_data: `discard_comment:${firstComment.id}` },
+            if (!existing) {
+              await prisma.commentThread.create({
+                data: {
+                  id: item.id,
+                  videoId: vidId,
+                  userId: user.id,
+                  authorDisplayName: item.authorDisplayName,
+                  originalText: item.originalText,
+                  detectedLanguage: item.detectedLanguage,
+                  publishedAt: new Date(),
+                  aiDraftReply: draftReply,
+                  approvalStatus: 'PENDING',
+                },
+              });
+
+              // Dispatch instant Telegram notification card
+              const keyboard = {
+                inline_keyboard: [
+                  [
+                    { text: '✅ Tasdiqlash / Approve', callback_data: `approve_comment:${item.id}` },
+                    { text: '🗑️ Bekor qilish / Discard', callback_data: `discard_comment:${item.id}` },
+                  ],
                 ],
-              ],
-            };
+              };
 
-            const text =
-              `💬 *Yangi YouTube Izohi Keldi!*\n\n` +
-              `🎬 *Video:* ${firstComment.videoTitle}\n` +
-              `👤 *Muallif:* ${firstComment.authorDisplayName} (${firstComment.detectedLanguage})\n` +
-              `📝 *Izoh:* "${firstComment.originalText}"\n\n` +
-              `🤖 *AI Agent Tayyorlagan Javob:*\n"${draftReply}"\n\n` +
-              `_Quyidagi tugma orqali 1-bosishda YouTube'ga joylashingiz mumkin:_`;
+              const text =
+                `💬 *Yangi YouTube Izohi Keldi!*\n\n` +
+                `🎬 *Video:* ${item.videoTitle}\n` +
+                `👤 *Muallif:* ${item.authorDisplayName} (${item.detectedLanguage})\n` +
+                `📝 *Izoh:* "${item.originalText}"\n\n` +
+                `🤖 *AI Agent Tayyorlagan Javob:*\n"${draftReply}"\n\n` +
+                `_Quyidagi tugma orqali 1-bosishda YouTube'ga joylashingiz mumkin:_`;
 
-            // Fire and forget telegram message
-            fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                chat_id: user.telegramChatId.toString(),
-                text,
-                parse_mode: 'Markdown',
-                reply_markup: keyboard,
-              }),
-            }).catch((e) => console.warn('Failed to send telegram notification:', e));
+              await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  chat_id: user.telegramChatId.toString(),
+                  text,
+                  parse_mode: 'Markdown',
+                  reply_markup: keyboard,
+                }),
+              }).catch((e) => console.warn('Failed to send telegram notification:', e));
+            }
           }
         }
       } catch (dbErr) {

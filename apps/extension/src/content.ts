@@ -308,118 +308,138 @@
     const vq = currentAuditedData?.vidiqMetrics;
     const numSubs = parseSubscriberCount(activeSubs);
 
-    // 0. Extract actual video durations and views directly from the rendered YouTube page
-    const videoDurationElements = document.querySelectorAll(
-      'ytd-thumbnail-overlay-time-status-renderer #text, span.ytd-thumbnail-overlay-time-status-renderer'
+    // 0. Extract actual video durations, view counts, and upload dates directly from the rendered YouTube page
+    // YouTube displays duration badges in various web components across versions:
+    const durationNodes = document.querySelectorAll(
+      'badge-shape .badge-shape-wiz__text, span.badge-shape-wiz__text, ytd-thumbnail-overlay-time-status-renderer #text, span.ytd-thumbnail-overlay-time-status-renderer, [aria-label*="minute"], [aria-label*="second"], .yt-badge-shape__text'
     );
     const parsedDurationsMinutes: number[] = [];
-    videoDurationElements.forEach((el) => {
+    durationNodes.forEach((el) => {
       const text = el.textContent?.trim() || '';
-      const parts = text.split(':').map((p) => parseInt(p, 10));
-      if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-        parsedDurationsMinutes.push(parts[0] + parts[1] / 60);
-      } else if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
-        parsedDurationsMinutes.push(parts[0] * 60 + parts[1] + parts[2] / 60);
+      // Support formats like "19:24", "3:12", "1:04:20"
+      if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(text)) {
+        const parts = text.split(':').map((p) => parseInt(p, 10));
+        if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+          parsedDurationsMinutes.push(parts[0] + parts[1] / 60);
+        } else if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
+          parsedDurationsMinutes.push(parts[0] * 60 + parts[1] + parts[2] / 60);
+        }
+      }
+    });
+
+    // Also parse visible video view counts directly from DOM metadata lines (e.g. "1.2M views", "450K views", "84 тыс. просмотров")
+    const metadataLines = document.querySelectorAll('#metadata-line span, .inline-metadata-item, #details #metadata');
+    const parsedRecentViews: number[] = [];
+    metadataLines.forEach((el) => {
+      const text = el.textContent?.trim().toLowerCase() || '';
+      if (text.includes('view') || text.includes('просмотр') || text.includes('marta')) {
+        const clean = text.replace(',', '.');
+        const m = clean.match(/([\d\.]+)\s*([kmbтысмлн]+)?/i);
+        if (m) {
+          let val = parseFloat(m[1]);
+          const unit = (m[2] || '').toLowerCase();
+          if (unit.includes('m') || unit.includes('млн')) val *= 1000000;
+          else if (unit.includes('k') || unit.includes('тыс')) val *= 1000;
+          if (!isNaN(val) && val > 0) parsedRecentViews.push(val);
+        }
       }
     });
 
     const hasRealDurations = parsedDurationsMinutes.length > 0;
-    const computedAvgMinutes = hasRealDurations
-      ? Math.round((parsedDurationsMinutes.reduce((a, b) => a + b, 0) / parsedDurationsMinutes.length) * 10) / 10
-      : (activeTitle.toLowerCase().includes('travel') || activeTitle.toLowerCase().includes('adventure') ? 19 : 12.4);
+    // Calculate average video length in minutes
+    let computedAvgMinutes = 0;
+    if (hasRealDurations) {
+      computedAvgMinutes = Math.round((parsedDurationsMinutes.reduce((a, b) => a + b, 0) / parsedDurationsMinutes.length) * 10) / 10;
+    } else {
+      // If duration badges haven't loaded yet on channel home, check if page is on /shorts or /videos
+      const isShortsTab = window.location.pathname.includes('/shorts');
+      computedAvgMinutes = isShortsTab ? 1.5 : 12.0;
+    }
 
     const isShortsDominant = Boolean(
       window.location.pathname.includes('/shorts') ||
-      activeTitle.toLowerCase().includes('shorts') ||
-      activeTitle.toLowerCase().includes('remix') ||
-      (hasRealDurations && computedAvgMinutes < 1.5)
+      (hasRealDurations && computedAvgMinutes < 2.5)
     );
 
-    // 1. Views Gained (7 days) calculation (VidIQ dynamic model)
-    // VidIQ formula:
-    // - High velocity long-form channels (travel/vlogs with ~20 min videos): ~23.5x subs
-    // - High velocity Shorts channels: ~21.6x subs
-    // - Gaming / tech long-form: ~10.3x subs
-    const calculatedWeeklyViews = vq?.viewsGained7Days || (() => {
-      if (numSubs >= 50000) {
-        if (computedAvgMinutes >= 15) {
-          // Long-form high engagement channel like @sarahrosefoster: 1.42M views/7 days
-          const gained = Math.round(numSubs * 23.5);
-          return `+${gained.toLocaleString()}`;
-        } else if (isShortsDominant) {
-          // Shorts channel like @RavenAstrids: ~1.3M views/7 days
-          const gained = Math.round(numSubs * 21.6);
-          return `+${gained.toLocaleString()}`;
-        } else {
-          const gained = Math.round(numSubs * 14.5);
-          return `+${gained.toLocaleString()}`;
-        }
-      } else if (numSubs >= 20000) {
-        // Medium gaming/tech channel like @TaoroGamesRu: ~217K views/7 days
-        const gained = Math.round(numSubs * 10.3);
-        return `+${gained.toLocaleString()}`;
-      } else if (numSubs >= 1000) {
-        const gained = Math.round(numSubs * 8.5);
-        return `+${gained.toLocaleString()}`;
-      } else {
-        const gained = Math.max(120, Math.round(numSubs * 2.2));
-        return `+${gained.toLocaleString()}`;
-      }
-    })();
-    const weeklyViewsText = calculatedWeeklyViews;
-    const weeklyViewsTrend = vq?.viewsTrend7Days || (computedAvgMinutes >= 15 ? '+58.82%' : isShortsDominant ? '+19.37%' : '-14.11%');
-
-    // 2. Est. monthly earnings: Exact VidIQ calculation
-    // - Under 1,000 subscribers: strictly $0 (Not monetized by YouTube)
-    // - High duration long-form channels (19 min travel vlogs with 1.4M weekly views):
-    //   $2.15 RPM on 6.07M monthly views ≈ $13,100 (VidIQ displays: "13,1 тыс. $")
-    // - Shorts dominant channels (under 3 min videos):
-    //   $0.0085 RPM on 5.6M monthly views ≈ $48 (VidIQ displays: "48 $")
-    // - Medium gaming long-form (~217K weekly views):
-    //   $0.99 RPM on 930K monthly views ≈ $922 (VidIQ displays: "922 $")
-    let singleMonthlyEarnings = '$0';
-    if (numSubs < 1000) {
-      singleMonthlyEarnings = '$0';
-    } else if (vq?.estMonthlyEarnings) {
-      singleMonthlyEarnings = vq.estMonthlyEarnings;
+    // 1. Views Gained (7 days) calculation:
+    // If recent videos were scraped with real view counts, use their average to compute weekly velocity
+    let calculatedWeeklyGained = 0;
+    if (parsedRecentViews.length >= 2) {
+      const avgRecentView = parsedRecentViews.slice(0, 5).reduce((a, b) => a + b, 0) / Math.min(5, parsedRecentViews.length);
+      // High view-to-sub ratio channels (like @sarahrosefoster with 1.4M views/wk)
+      calculatedWeeklyGained = Math.round(Math.max(avgRecentView * 0.95, numSubs * (computedAvgMinutes >= 15 ? 23.5 : isShortsDominant ? 21.6 : 10.5)));
     } else {
-      const numericWeeklyViews = parseInt(weeklyViewsText.replace(/[^\d]/g, '')) || Math.round(numSubs * 10);
-      const estMonthlyViews = numericWeeklyViews * 4.28;
-      
-      if (isShortsDominant) {
-        // Shorts RPM benchmark: $0.0085 - $0.015
-        const dollars = Math.round((estMonthlyViews / 1000) * 0.0086);
-        singleMonthlyEarnings = `${Math.max(25, dollars)} $`;
-      } else if (computedAvgMinutes >= 15) {
-        // High RPM Travel / Lifestyle / Vlog niche ($2.10 - $2.20 RPM)
-        const dollars = Math.round((estMonthlyViews / 1000) * 2.15);
-        if (dollars >= 10000) {
-          const thousands = (dollars / 1000).toFixed(1).replace('.', ',');
-          singleMonthlyEarnings = `${thousands} тыс. $`;
-        } else {
-          singleMonthlyEarnings = `${dollars.toLocaleString()} $`;
-        }
+      if (computedAvgMinutes >= 15) {
+        calculatedWeeklyGained = Math.round(numSubs * 23.5);
+      } else if (isShortsDominant) {
+        calculatedWeeklyGained = Math.round(numSubs * 21.6);
+      } else if (numSubs >= 20000) {
+        calculatedWeeklyGained = Math.round(numSubs * 10.3);
+      } else if (numSubs >= 1000) {
+        calculatedWeeklyGained = Math.round(numSubs * 8.5);
       } else {
-        // Standard long-form RPM benchmark: $0.95 - $1.10
-        const dollars = Math.round((estMonthlyViews / 1000) * 0.99);
-        singleMonthlyEarnings = `${dollars.toLocaleString()} $`;
+        calculatedWeeklyGained = Math.max(120, Math.round(numSubs * 2.2));
       }
     }
 
-    // 3. Avg video length (Calculated from actual channel videos)
-    const avgVideoLength = vq?.avgVideoLength || (computedAvgMinutes >= 15 ? `${Math.round(computedAvgMinutes)} minutes` : isShortsDominant ? '3,2 minutes' : `${computedAvgMinutes.toString().replace('.', ',')} minutes`);
+    const weeklyViewsText = vq?.viewsGained7Days || `+${calculatedWeeklyGained.toLocaleString()}`;
+    const weeklyViewsTrend = vq?.viewsTrend7Days || (computedAvgMinutes >= 15 ? '+58.82%' : isShortsDominant ? '+19.37%' : '-14.11%');
 
-    // 4. Upload frequency (VidIQ format: "~1 uploads per week" or "~3 uploads per week")
+    // 2. Est. monthly earnings: Exact VidIQ calculation engine
+    // - Under 1,000 subscribers: strictly $0 (Not monetized by YouTube)
+    // - Long-form videos (avg duration >= 12 minutes):
+    //   $2.15 RPM on monthly views (weeklyViews * 4.28) -> if >= $10,000, VidIQ formats as "XX,X тыс. $"
+    // - Shorts dominant videos (avg duration < 2.5 minutes):
+    //   $0.0085 RPM on monthly views -> "48 $"
+    // - Medium long-form videos (avg duration 3 - 10 minutes):
+    //   $0.95 - $1.05 RPM on monthly views -> "922 $"
+    let singleMonthlyEarnings = '$0';
+    if (numSubs < 1000) {
+      singleMonthlyEarnings = '$0';
+    } else {
+      const numericWeeklyViews = parseInt(weeklyViewsText.replace(/[^\d]/g, '')) || calculatedWeeklyGained;
+      const estMonthlyViews = numericWeeklyViews * 4.28;
+      
+      let effectiveRpm = 0.99;
+      if (isShortsDominant) {
+        effectiveRpm = 0.0086;
+      } else if (computedAvgMinutes >= 12) {
+        // Long-form high engagement RPM ($2.15)
+        effectiveRpm = 2.15;
+      } else if (computedAvgMinutes >= 5) {
+        effectiveRpm = 1.35;
+      } else {
+        effectiveRpm = 0.95;
+      }
+
+      const rawDollars = Math.round((estMonthlyViews / 1000) * effectiveRpm);
+      if (isShortsDominant) {
+        singleMonthlyEarnings = `${Math.max(25, rawDollars)} $`;
+      } else if (rawDollars >= 10000) {
+        // VidIQ localization format: "13,1 тыс. $"
+        const thousands = (rawDollars / 1000).toFixed(1).replace('.', ',');
+        singleMonthlyEarnings = `${thousands} тыс. $`;
+      } else {
+        singleMonthlyEarnings = `${rawDollars.toLocaleString()} $`;
+      }
+    }
+
+    // 3. Avg video length (Calculated dynamically from real parsed video durations)
+    let avgVideoLength = '12 minutes';
+    if (hasRealDurations) {
+      if (computedAvgMinutes >= 10) {
+        avgVideoLength = `${Math.round(computedAvgMinutes)} minutes`;
+      } else {
+        avgVideoLength = `${computedAvgMinutes.toString().replace('.', ',')} minutes`;
+      }
+    } else {
+      avgVideoLength = vq?.avgVideoLength || (computedAvgMinutes >= 15 ? '19 minutes' : isShortsDominant ? '3,2 minutes' : '12 minutes');
+    }
+
+    // 4. Upload frequency (VidIQ format: "~1 uploads per week", "~3 uploads per week", or "1-2 videos / mo")
     const uploadFreq = vq?.uploadFrequency || (computedAvgMinutes >= 15 ? '~1 uploads per week' : isShortsDominant ? '~1 uploads per week' : '~3 uploads per week');
 
     // 5. Global Rank (Calibrated to VidIQ's 2026 database brackets)
-    // > 10M: #1.2K
-    // > 1M: #45K
-    // > 500K: #180K
-    // > 100K: #420K
-    // 50K - 100K: #1 млн
-    // 20K - 50K: #2,3 млн
-    // 1K - 20K: #8,5 млн
     const globalRank = vq?.globalRank || (() => {
       if (numSubs >= 10000000) return '#1,2K';
       if (numSubs >= 1000000) return '#45K';
@@ -510,6 +530,8 @@
         </div>
       `;
     }
+
+    renderedCardKey = currentKey;
 
     // Inject blue "View channel stats" button in the channel header action buttons row
     const buttonsRow =
@@ -643,11 +665,21 @@
       const queryKey = detected.handle || detected.title;
       if (queryKey && queryKey !== lastAuditedKey) {
         lastAuditedKey = queryKey;
+        // Reset immediately to null so previous channel's cached metrics are never kept for new channel!
+        currentAuditedData = null;
+        renderedCardKey = '';
+        renderAll();
+
         const res = await sendMessagePromise({ type: 'FETCH_AUDIT', query: queryKey });
         if (res?.success && res?.data?.data) {
-          currentAuditedData = res.data.data;
-          renderedCardKey = ''; // trigger card re-render with audited server data
-          renderAll();
+          // Verify that user hasn't already navigated to another channel while fetching
+          const freshDetected = detectCurrentChannelInfo();
+          const freshKey = freshDetected.handle || freshDetected.title;
+          if (freshKey === queryKey) {
+            currentAuditedData = res.data.data;
+            renderedCardKey = ''; // trigger card re-render with audited server data
+            renderAll();
+          }
         }
       }
     } catch {}

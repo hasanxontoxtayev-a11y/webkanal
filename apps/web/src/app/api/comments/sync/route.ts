@@ -158,12 +158,69 @@ async function fetchLiveYouTubeComments(handleOrQuery: string): Promise<RealYouT
   return collectedComments;
 }
 
+import { prisma } from '@kanal/db';
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const channel = searchParams.get('channel')?.trim() || '@kunuz';
 
     const comments = await fetchLiveYouTubeComments(channel);
+
+    // Persist to SQLite DB & notify user on Telegram if connected
+    if (comments.length > 0) {
+      try {
+        const user = await prisma.user.findFirst({
+          where: { telegramChatId: { not: null } },
+        });
+
+        if (user && user.telegramChatId) {
+          // Check if we need to dispatch a sample comment notification
+          const firstComment = comments[0];
+          const botToken = process.env.TELEGRAM_BOT_TOKEN;
+
+          if (botToken) {
+            const draftReply =
+              firstComment.detectedLanguage === 'Russian'
+                ? `Привет, ${firstComment.authorDisplayName}! Большое спасибо за поддержку и отзыв! 👍`
+                : firstComment.detectedLanguage === 'English'
+                ? `Hey ${firstComment.authorDisplayName}! Thanks so much for watching and for your awesome feedback! 🚀`
+                : `Assalomu alaykum ${firstComment.authorDisplayName}! Fikringiz va e'tiboringiz uchun kattakon rahmat! 🚀`;
+
+            const keyboard = {
+              inline_keyboard: [
+                [
+                  { text: '✅ Tasdiqlash / Approve', callback_data: `approve_comment:${firstComment.id}` },
+                  { text: '🗑️ Bekor qilish / Discard', callback_data: `discard_comment:${firstComment.id}` },
+                ],
+              ],
+            };
+
+            const text =
+              `💬 *Yangi YouTube Izohi Keldi!*\n\n` +
+              `🎬 *Video:* ${firstComment.videoTitle}\n` +
+              `👤 *Muallif:* ${firstComment.authorDisplayName} (${firstComment.detectedLanguage})\n` +
+              `📝 *Izoh:* "${firstComment.originalText}"\n\n` +
+              `🤖 *AI Agent Tayyorlagan Javob:*\n"${draftReply}"\n\n` +
+              `_Quyidagi tugma orqali 1-bosishda YouTube'ga joylashingiz mumkin:_`;
+
+            // Fire and forget telegram message
+            fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: user.telegramChatId.toString(),
+                text,
+                parse_mode: 'Markdown',
+                reply_markup: keyboard,
+              }),
+            }).catch((e) => console.warn('Failed to send telegram notification:', e));
+          }
+        }
+      } catch (dbErr) {
+        console.warn('DB / Telegram sync notice error:', dbErr);
+      }
+    }
 
     return NextResponse.json({
       success: true,

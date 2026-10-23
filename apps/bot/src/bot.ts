@@ -528,7 +528,7 @@ bot.command("audit", async (ctx) => {
 // -----------------------------------------------------------------------------
 bot.callbackQuery(/^approve_comment:(.+)$/, async (ctx) => {
   const commentId = ctx.match[1];
-  await ctx.answerCallbackQuery({ text: "Izoh tasdiqlanmoqda..." }).catch(() => {});
+  await ctx.answerCallbackQuery({ text: "✅ Izoh tasdiqlandi!" }).catch(() => {});
 
   let commentThread = await prisma.commentThread.findUnique({
     where: { id: commentId },
@@ -536,7 +536,7 @@ bot.callbackQuery(/^approve_comment:(.+)$/, async (ctx) => {
   });
 
   if (!commentThread || !commentThread.aiDraftReply) {
-    return ctx.reply("❌ Comment draft not found or already processed.");
+    return ctx.reply("❌ Bu izoh allaqachon ko'rib chiqilgan yoki topilmadi.");
   }
 
   let postSuccess = false;
@@ -565,24 +565,28 @@ bot.callbackQuery(/^approve_comment:(.+)$/, async (ctx) => {
       },
     });
 
-    const statusNote = postSuccess
-      ? `✅ **Javob YouTube'ga muvaffaqiyatli joylandi! / Published to YouTube!**`
-      : `✅ **Javob tasdiqlandi va sinxronlandi! / Approved & Queued!**`;
+    const statusHeader = postSuccess
+      ? `✅ **Izoh muvaffaqiyatli tasdiqlandi va YouTube'ga joylandi!**`
+      : `✅ **Izoh muvaffaqiyatli tasdiqlandi!**`;
 
+    // 1. Edit original message card
     await ctx.editMessageText(
-      `${statusNote}\n\n` +
+      `${statusHeader}\n\n` +
       `👤 **Muallif:** ${commentThread.authorDisplayName}\n` +
       `📝 **Izoh:** "${commentThread.originalText}"\n\n` +
-      `🤖 **Yuborilgan AI Javob:**\n"${commentThread.aiDraftReply}"`,
+      `🤖 **Tasdiqlangan AI Javob:**\n"${commentThread.aiDraftReply}"\n\n` +
+      `_Holat: Tasdiqlandi (Approved)_`,
       { parse_mode: "Markdown" }
-    ).catch(async () => {
-      await ctx.reply(
-        `${statusNote}\n\n` +
-        `👤 Muallif: ${commentThread.authorDisplayName}\n` +
-        `📝 Izoh: "${commentThread.originalText}"\n\n` +
-        `🤖 Javob: "${commentThread.aiDraftReply}"`
-      );
-    });
+    ).catch(() => {});
+
+    // 2. Also send explicit confirmation notification to user
+    await ctx.reply(
+      `🎉 **Tasdiqlandi!**\n\n` +
+      `Siz **${commentThread.authorDisplayName}** qoldirgan izohga AI javobini tasdiqladingiz.\n` +
+      `Javob: _"${commentThread.aiDraftReply}"_`,
+      { parse_mode: "Markdown" }
+    ).catch(() => {});
+
   } catch (dbErr: any) {
     console.error("Failed to update approved status:", dbErr);
     await ctx.reply("✅ Izoh tasdiqlandi!");
@@ -591,9 +595,13 @@ bot.callbackQuery(/^approve_comment:(.+)$/, async (ctx) => {
 
 bot.callbackQuery(/^discard_comment:(.+)$/, async (ctx) => {
   const commentId = ctx.match[1];
-  await ctx.answerCallbackQuery({ text: "Bekor qilindi / Discarded." }).catch(() => {});
+  await ctx.answerCallbackQuery({ text: "🗑️ Izoh bekor qilindi!" }).catch(() => {});
 
   try {
+    const commentThread = await prisma.commentThread.findUnique({
+      where: { id: commentId },
+    });
+
     await prisma.commentThread.update({
       where: { id: commentId },
       data: {
@@ -602,9 +610,22 @@ bot.callbackQuery(/^discard_comment:(.+)$/, async (ctx) => {
       },
     });
 
-    await ctx.editMessageText("🗑️ *Izoh bekor qilindi (Rad etildi).* / Comment draft discarded.", { parse_mode: "Markdown" }).catch(async () => {
-      await ctx.reply("🗑️ Izoh bekor qilindi.");
-    });
+    // 1. Edit original card
+    await ctx.editMessageText(
+      `🗑️ **Izoh bekor qilindi (Rad etildi).**\n\n` +
+      `👤 **Muallif:** ${commentThread?.authorDisplayName || 'Foydalanuvchi'}\n` +
+      `📝 **Izoh:** "${commentThread?.originalText || ''}"\n\n` +
+      `_Ushbu izohga avtomatik javob berilmaydi va u bekor qilindi._`,
+      { parse_mode: "Markdown" }
+    ).catch(() => {});
+
+    // 2. Send explicit notification message
+    await ctx.reply(
+      `🗑️ **Bekor qilindi!**\n\n` +
+      `Siz **${commentThread?.authorDisplayName || 'Foydalanuvchi'}** qoldirgan izohni rad etdingiz. Javob YouTube'ga yuborilmaydi.`,
+      { parse_mode: "Markdown" }
+    ).catch(() => {});
+
   } catch {
     await ctx.reply("🗑️ Izoh bekor qilindi.");
   }

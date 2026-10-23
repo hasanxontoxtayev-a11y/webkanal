@@ -82,7 +82,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-2">4. How We Use Your Data (Google Limited Use Policy)</h2>
+            <h2 className="text-lg font-bold text-white mb-2">4. How We Use and Protect Google User Data</h2>
             <p>
               TubePilot AI complies with the{' '}
               <a
@@ -93,46 +93,80 @@ export default function PrivacyPolicyPage() {
               >
                 Google API Services User Data Policy
               </a>
-              , including the Limited Use requirements.
+              , including the <strong>Limited Use</strong> requirements.
             </p>
-            <p className="mt-2">
-              We strictly <strong>do NOT</strong> sell your personal or channel data to third parties, advertising
-              platforms, or data brokers. Data retrieved via YouTube API is exclusively used to present analytics and
-              AI insights inside your TubePilot AI dashboard.
-            </p>
+            <div className="mt-3 space-y-2">
+              <p>
+                <strong>Specific Data Usage:</strong> Google user data (channel statistics, video metadata, and comment threads) is accessed solely to calculate growth metrics (CTR, VPH, estimated earnings) and draft creator-approved replies in the TubePilot AI dashboard.
+              </p>
+              <p>
+                <strong>No Data Transfers or Sales:</strong> We strictly do NOT sell, lease, or trade your personal or YouTube channel data to third parties, advertising networks, or data brokers.
+              </p>
+              <p>
+                <strong>No AI Model Training on User Data:</strong> TubePilot AI does NOT use Google user data to train, fine-tune, or improve generalized artificial intelligence or machine learning models. User data processed via Google Gemini API is ephemeral and adheres to strict enterprise privacy standards.
+              </p>
+            </div>
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-2">5. Data Retention &amp; Revoking Access</h2>
+            <h2 className="text-lg font-bold text-white mb-2">5. Data Protection and Security Mechanisms</h2>
             <p>
-              You may revoke TubePilot AI&apos;s access to your YouTube channel at any time directly through the Google
-              Security Settings page at:{' '}
-              <a
-                href="https://myaccount.google.com/permissions"
-                target="_blank"
-                rel="noreferrer"
-                className="text-rose-400 underline"
-              >
-                https://myaccount.google.com/permissions
-              </a>
-              .
+              We implement comprehensive technical and organizational measures to safeguard confidential user data:
             </p>
-            <p className="mt-2">
-              Alternatively, you can disconnect your channel inside your TubePilot AI dashboard with a single click,
-              which purges all stored tokens from our database immediately.
-            </p>
+            <ul className="list-disc pl-5 space-y-2 mt-2">
+              <li>
+                <strong>AES-256 Encryption at Rest:</strong> All OAuth tokens (access tokens and refresh tokens) are encrypted at rest using industry-standard AES-256-CBC encryption with unique cryptographic initialization vectors before storage.
+              </li>
+              <li>
+                <strong>TLS/HTTPS Encryption in Transit:</strong> All communications between users, TubePilot AI, Google APIs, and Telegram bots are strictly encrypted in transit using TLS 1.3 / HTTPS.
+              </li>
+              <li>
+                <strong>Strict Access Controls:</strong> Database and server infrastructure access is restricted via multi-factor authentication (MFA) and least-privilege role-based access controls (RBAC).
+              </li>
+              <li>
+                <strong>Vulnerability Management:</strong> Continuous automated security patch auditing and dependency vulnerability scanning.
+              </li>
+            </ul>
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-2">6. Contact Us</h2>
+            <h2 className="text-lg font-bold text-white mb-2">6. Data Retention, Deletion, and Revoking Access</h2>
             <p>
-              If you have any questions about this Privacy Policy, your data, or compliance, please contact our Data
-              Protection Officer at:
+              You have complete control over your data and authorization:
+            </p>
+            <ul className="list-disc pl-5 space-y-2 mt-2">
+              <li>
+                <strong>Google Account Permissions:</strong> You can revoke TubePilot AI&apos;s access at any moment via Google Security Settings:{' '}
+                <a
+                  href="https://myaccount.google.com/permissions"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-rose-400 underline"
+                >
+                  https://myaccount.google.com/permissions
+                </a>.
+              </li>
+              <li>
+                <strong>Instant Channel Disconnect &amp; Purge:</strong> Clicking &quot;Disconnect Channel&quot; in the TubePilot AI workspace instantly purges all stored tokens, credentials, and cached channel records from our database.
+              </li>
+              <li>
+                <strong>Right to Erasure:</strong> Users can request full permanent deletion of their account and associated data by emailing our support team.
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-bold text-white mb-2">7. Contact Information</h2>
+            <p>
+              For privacy inquiries, data deletion requests, or security verification questions:
             </p>
             <p className="mt-1 font-semibold text-white">
-              Email: <a href="mailto:hasanxontoxtayev@gmail.com" className="text-rose-400">hasanxontoxtayev@gmail.com</a>
+              Primary Developer &amp; Data Protection Contact:{' '}
+              <a href="mailto:hasanxontoxtayev@gmail.com" className="text-rose-400 underline">
+                hasanxontoxtayev@gmail.com
+              </a>
             </p>
-            <p className="text-xs text-gray-400 mt-1">TubePilot AI, tubepilotpro.com</p>
+            <p className="text-xs text-gray-400 mt-1">TubePilot AI (Project ID: tubepilot-512119 / 427558992320) — https://www.tubepilotpro.com</p>
           </section>
         </div>
       </div>

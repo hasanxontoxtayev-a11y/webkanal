@@ -251,43 +251,52 @@
     uploadFrequency?: string;
   } | null {
     try {
-      const allDivs = Array.from(document.querySelectorAll('div, section, ytd-browse, ytd-tabbed-page-header'));
-      const vidiqHeader = allDivs.find((el) => {
-        const txt = el.textContent || '';
-        return txt.includes('Quick channel stats') && (txt.includes('vidIQ') || txt.includes('vidiq')) && !el.id?.includes('tubepilot');
+      // Find any element containing Quick channel stats from vidIQ
+      const candidates = Array.from(document.querySelectorAll('*')).filter((el) => {
+        if (el.id?.includes('tubepilot')) return false;
+        const text = el.textContent || '';
+        return (
+          text.includes('Quick channel stats') &&
+          (text.includes('vidIQ') || text.includes('vidiq') || el.className?.toString().toLowerCase().includes('vidiq'))
+        );
       });
 
-      if (!vidiqHeader) return null;
+      if (candidates.length === 0) return null;
 
-      let cardRoot: Element | null = vidiqHeader;
-      for (let i = 0; i < 5; i++) {
-        if (
-          cardRoot?.parentElement &&
-          (cardRoot.parentElement.innerText || '').includes('Views gained') &&
-          (cardRoot.parentElement.innerText || '').includes('Upload frequency')
-        ) {
-          cardRoot = cardRoot.parentElement;
-          break;
+      // Find the card container that holds the boxes
+      let cardRoot: Element | null = null;
+      for (const cand of candidates) {
+        let curr: Element | null = cand;
+        for (let i = 0; i < 6; i++) {
+          if (!curr) break;
+          const t = curr.textContent || '';
+          if (
+            (t.includes('Views gained') || t.includes('views gained')) &&
+            (t.includes('Upload frequency') || t.includes('upload frequency') || t.includes('Avg. video length'))
+          ) {
+            cardRoot = curr;
+            break;
+          }
+          curr = curr.parentElement;
         }
-        cardRoot = cardRoot?.parentElement || null;
+        if (cardRoot) break;
       }
 
-      const text = cardRoot?.innerText || vidiqHeader.parentElement?.innerText || '';
-      if (!text.includes('Views gained') || !text.includes('Upload frequency')) return null;
+      if (!cardRoot) return null;
+      const text = (cardRoot as HTMLElement).innerText || cardRoot.textContent || '';
+      if (!text.includes('Views gained') && !text.includes('views gained')) return null;
 
       const res: any = {};
 
       // 1. Views gained (7 days)
-      const vMatch =
-        text.match(/Views gained[^\n\r]*\n+([+\-][\d\s\u00A0]+)\s+([+\-][\d\.,]+%)/i) ||
-        text.match(/Views gained\s*\([^\)]*\)[\s\r\n]*([+\-][\d\s\u00A0]+)[\s\r\n]*([+\-][\d\.,]+%)/i);
+      const vMatch = text.match(/Views gained[^\n\r]*[\r\n\s]+([+\-]?[\d\s\u00A0]+)[\r\n\s]+([+\-]?[\d\.,]+%)/i);
       if (vMatch) {
         res.viewsGained7Days = vMatch[1].trim();
         res.viewsTrend7Days = vMatch[2].trim();
       }
 
-      // 2. Podpischiki
-      const sMatch = text.match(/Подписчики[\s\r\n]+([\d\.,]+\s*[тысмлнKMB]*)[\s\r\n]+([+\-][\d\.,]+%)[\s\r\n]+Ranked[\s\r\n]+([#\d\.,\sтысмлнKMB]+)/i);
+      // 2. Podpischiki / Subscribers
+      const sMatch = text.match(/(?:Подписчики|Subscribers)[\r\n\s]+([\d\.,]+\s*[тысмлнKMB]*)[\r\n\s]+([+\-]?[\d\.,]+%)[\r\n\s]+Ranked[\r\n\s]+([#\d\.,\sтысмлнKMB]+)/i);
       if (sMatch) {
         res.subscribersDisplay = sMatch[1].trim();
         res.subGrowthPct = sMatch[2].trim();
@@ -295,19 +304,19 @@
       }
 
       // 3. Est. monthly earnings
-      const eMatch = text.match(/Est\.\s*monthly\s*earnings[\s\r\n]+([\d\.,\sтысмлнKMB\$\—]+|No data)/i);
+      const eMatch = text.match(/Est\.\s*monthly\s*earnings[\r\n\s]+([\d\.,\sтысмлнKMB\$\—]+|No data)/i);
       if (eMatch) {
         res.estMonthlyEarnings = eMatch[1].trim();
       }
 
       // 4. Avg. video length
-      const lMatch = text.match(/Avg\.\s*video\s*length[\s\r\n]+([\d\.,]+\s*minutes?)/i);
+      const lMatch = text.match(/Avg\.\s*video\s*length[\r\n\s]+([\d\.,]+\s*minutes?)/i);
       if (lMatch) {
         res.avgVideoLength = lMatch[1].trim();
       }
 
       // 5. Upload frequency
-      const uMatch = text.match(/Upload\s*frequency[\s\r\n]+([~]?[\d\-–\s]+(?:uploads|videos)\s*(?:per|\/)\s*(?:week|month|mo|wk))/i);
+      const uMatch = text.match(/Upload\s*frequency[\r\n\s]+([~]?[\d\-–\s]+(?:uploads|videos)\s*(?:per|\/)\s*(?:week|month|mo|wk))/i);
       if (uMatch) {
         res.uploadFrequency = uMatch[1].trim();
       }
@@ -347,7 +356,9 @@
 
     if (!channelHeader) return;
 
-    const currentKey = `${detected.handle}_${detected.title}_${currentAuditedData ? 'audited' : 'dom'}`;
+    // Dynamic VidIQ Parity Metrics computation: prioritize live VidIQ card if active, else audited
+    const liveVq = extractVidIqLiveDomStats();
+    const currentKey = `${detected.handle}_${detected.title}_${currentAuditedData ? 'audited' : 'dom'}_${liveVq?.viewsGained7Days || 'none'}`;
 
     let card = document.getElementById(CHANNEL_CARD_ID);
     if (!card) {
@@ -391,8 +402,6 @@
     const activeVph = currentAuditedData?.vph?.currentVph || '0 VPH';
     const peakVph = currentAuditedData?.vph?.peakVph || '0 VPH';
     
-    // Dynamic VidIQ Parity Metrics computation: prioritize live VidIQ card if active, else audited
-    const liveVq = extractVidIqLiveDomStats();
     const vq = {
       ...(currentAuditedData?.vidiqMetrics || {}),
       ...(liveVq || {}),

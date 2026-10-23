@@ -251,74 +251,65 @@
     uploadFrequency?: string;
   } | null {
     try {
-      // Find any element containing "Views gained" on the page that is NOT created by TubePilot
-      const allElements = Array.from(document.querySelectorAll('div, section, ytd-browse'));
-      let cardRoot: Element | null = null;
-
-      for (const el of allElements) {
-        if (el.id?.includes('tubepilot')) continue;
-        const text = el.textContent || '';
-        // VidIQ card always contains both "Views gained" and ("Upload frequency" or "Avg. video length")
-        if (
-          (text.includes('Views gained') || text.includes('views gained')) &&
-          (text.includes('Upload frequency') || text.includes('Avg. video length'))
-        ) {
-          // Check that this is a leaf-like container, not document.body
-          if (el.children.length >= 2 && el.children.length <= 15) {
-            cardRoot = el;
-            break;
-          }
-        }
-      }
-
-      if (!cardRoot) {
-        // Fallback: look for any element containing "Quick channel stats" not by tubepilot
-        for (const el of allElements) {
-          if (el.id?.includes('tubepilot')) continue;
-          if (el.textContent?.includes('Quick channel stats')) {
-            cardRoot = el.parentElement || el;
-            break;
-          }
-        }
-      }
-
-      if (!cardRoot) return null;
-      const text = (cardRoot as HTMLElement).innerText || cardRoot.textContent || '';
-      if (!text.includes('Views gained') && !text.includes('views gained')) return null;
+      const allNodes = Array.from(document.querySelectorAll('div, span, p, section'));
+      // Filter out TubePilot elements
+      const nonTubeNodes = allNodes.filter(n => !n.closest(`#${CHANNEL_CARD_ID}`) && !n.id?.includes('tubepilot'));
 
       const res: any = {};
 
-      // 1. Views gained (7 days)
-      const vMatch = text.match(/Views gained[^\n\r]*[\r\n\s]+([+\-]?[\d\s\u00A0]+)[\r\n\s]+([+\-]?[\d\.,]+%)/i);
-      if (vMatch) {
-        res.viewsGained7Days = vMatch[1].trim();
-        res.viewsTrend7Days = vMatch[2].trim();
-      }
+      for (let i = 0; i < nonTubeNodes.length; i++) {
+        const text = (nonTubeNodes[i].textContent || '').trim();
 
-      // 2. Podpischiki / Subscribers
-      const sMatch = text.match(/(?:Подписчики|Subscribers)[\r\n\s]+([\d\.,]+\s*[тысмлнKMB]*)[\r\n\s]+([+\-]?[\d\.,]+%)[\r\n\s]+Ranked[\r\n\s]+([#\d\.,\sтысмлнKMB]+)/i);
-      if (sMatch) {
-        res.subscribersDisplay = sMatch[1].trim();
-        res.subGrowthPct = sMatch[2].trim();
-        res.globalRank = sMatch[3].trim();
-      }
+        // 1. Views gained (7 days)
+        if (!res.viewsGained7Days && text.includes('Views gained') && (text.includes('%') || (nonTubeNodes[i].parentElement?.textContent || '').includes('%'))) {
+          const combined = (nonTubeNodes[i].parentElement?.textContent || text);
+          const m = combined.match(/([+\-][\d\s\u00A0]+)\s+([+\-][\d\.,]+%)/);
+          if (m) {
+            res.viewsGained7Days = m[1].trim();
+            res.viewsTrend7Days = m[2].trim();
+          }
+        }
 
-      // 3. Est. monthly earnings
-      const eMatch = text.match(/Est\.\s*monthly\s*earnings[\r\n\s]+([\d\.,\sтысмлнKMB\$\—]+|No data)/i);
-      if (eMatch) {
-        res.estMonthlyEarnings = eMatch[1].trim();
-      }
+        // 2. Podpischiki
+        if (!res.subscribersDisplay && (text.includes('Подписчики') || text.includes('Subscribers')) && (nonTubeNodes[i].parentElement?.textContent || '').includes('Ranked')) {
+          const combined = (nonTubeNodes[i].parentElement?.textContent || text);
+          const m = combined.match(/(?:Подписчики|Subscribers)\s*([\d\.,]+\s*[тысмлнKMB]*)\s*([+\-][\d\.,]+%)\s*Ranked\s*([#\d\.,\sтысмлнKMB]+)/i);
+          if (m) {
+            res.subscribersDisplay = m[1].trim();
+            res.subGrowthPct = m[2].trim();
+            res.globalRank = m[3].trim();
+          }
+        }
 
-      // 4. Avg. video length
-      const lMatch = text.match(/Avg\.\s*video\s*length[\r\n\s]+([\d\.,]+\s*minutes?)/i);
-      if (lMatch) {
-        res.avgVideoLength = lMatch[1].trim();
-      }
+        // 3. Est. monthly earnings
+        if (!res.estMonthlyEarnings && (text.includes('Est. monthly earnings') || text.includes('monthly earnings'))) {
+          const combined = (nonTubeNodes[i].parentElement?.textContent || text);
+          const m = combined.match(/(?:Est\.\s*monthly\s*earnings|monthly earnings)\s*([\d\.,\sтысмлнKMB\$\—]+|No data)/i);
+          if (m) {
+            const rawVal = m[1].trim();
+            if (rawVal.includes('$') || rawVal === 'No data') {
+              res.estMonthlyEarnings = rawVal;
+            }
+          }
+        }
 
-      // 5. Upload frequency
-      const uMatch = text.match(/Upload\s*frequency[\r\n\s]+([~]?[\d\-–\s]+(?:uploads|videos)\s*(?:per|\/)\s*(?:week|month|mo|wk))/i);
-      if (uMatch) {
-        res.uploadFrequency = uMatch[1].trim();
+        // 4. Avg. video length
+        if (!res.avgVideoLength && (text.includes('Avg. video length') || text.includes('video length'))) {
+          const combined = (nonTubeNodes[i].parentElement?.textContent || text);
+          const m = combined.match(/([\d\.,]+\s*minutes?)/i);
+          if (m) {
+            res.avgVideoLength = m[1].trim();
+          }
+        }
+
+        // 5. Upload frequency
+        if (!res.uploadFrequency && (text.includes('Upload frequency') || text.includes('uploads per week') || text.includes('videos per week'))) {
+          const combined = (nonTubeNodes[i].parentElement?.textContent || text);
+          const m = combined.match(/([~]?[\d\-–\s]+(?:uploads|videos)\s*(?:per|\/)\s*(?:week|month|mo|wk))/i);
+          if (m) {
+            res.uploadFrequency = m[1].trim();
+          }
+        }
       }
 
       if (res.viewsGained7Days || res.estMonthlyEarnings || res.avgVideoLength) {

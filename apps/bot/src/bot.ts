@@ -11,7 +11,10 @@ bot.catch((err) => {
 });
 
 const getDashboardUrl = () => {
-  return process.env.NEXTAUTH_URL || "http://localhost:3001";
+  if (process.env.NEXTAUTH_URL && !process.env.NEXTAUTH_URL.includes("localhost")) {
+    return process.env.NEXTAUTH_URL;
+  }
+  return "https://www.tubepilotpro.com";
 };
 
 // Check if URL is valid for Telegram InlineKeyboard (Telegram API rejects 'localhost')

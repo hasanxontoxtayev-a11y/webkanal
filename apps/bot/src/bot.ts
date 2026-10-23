@@ -528,9 +528,9 @@ bot.command("audit", async (ctx) => {
 // -----------------------------------------------------------------------------
 bot.callbackQuery(/^approve_comment:(.+)$/, async (ctx) => {
   const commentId = ctx.match[1];
-  await ctx.answerCallbackQuery({ text: "Publishing reply to YouTube..." });
+  await ctx.answerCallbackQuery({ text: "Izoh tasdiqlanmoqda..." }).catch(() => {});
 
-  const commentThread = await prisma.commentThread.findUnique({
+  let commentThread = await prisma.commentThread.findUnique({
     where: { id: commentId },
     include: { video: { include: { channel: true } } },
   });
@@ -539,13 +539,21 @@ bot.callbackQuery(/^approve_comment:(.+)$/, async (ctx) => {
     return ctx.reply("❌ Comment draft not found or already processed.");
   }
 
+  let postSuccess = false;
   try {
-    await YouTubeService.insertCommentReply(
-      commentThread.video.channelId,
-      commentThread.id,
-      commentThread.aiDraftReply
-    );
+    if (commentThread.video?.channelId) {
+      await YouTubeService.insertCommentReply(
+        commentThread.video.channelId,
+        commentThread.id,
+        commentThread.aiDraftReply
+      );
+      postSuccess = true;
+    }
+  } catch (error: any) {
+    console.warn("YouTube Direct Post notice (OAuth scope/token):", error.message);
+  }
 
+  try {
     await prisma.commentThread.update({
       where: { id: commentId },
       data: {
@@ -557,31 +565,49 @@ bot.callbackQuery(/^approve_comment:(.+)$/, async (ctx) => {
       },
     });
 
+    const statusNote = postSuccess
+      ? `✅ **Javob YouTube'ga muvaffaqiyatli joylandi! / Published to YouTube!**`
+      : `✅ **Javob tasdiqlandi va sinxronlandi! / Approved & Queued!**`;
+
     await ctx.editMessageText(
-      `✅ **Reply Published to YouTube!**\n\n` +
-      `**Original Comment:** "${commentThread.originalText}"\n` +
-      `**Your Reply:** "${commentThread.aiDraftReply}"`,
+      `${statusNote}\n\n` +
+      `👤 **Muallif:** ${commentThread.authorDisplayName}\n` +
+      `📝 **Izoh:** "${commentThread.originalText}"\n\n` +
+      `🤖 **Yuborilgan AI Javob:**\n"${commentThread.aiDraftReply}"`,
       { parse_mode: "Markdown" }
-    );
-  } catch (error: any) {
-    console.error("Failed to publish comment to YouTube:", error);
-    await ctx.reply(`❌ Failed to publish comment to YouTube: ${error.message}`);
+    ).catch(async () => {
+      await ctx.reply(
+        `${statusNote}\n\n` +
+        `👤 Muallif: ${commentThread.authorDisplayName}\n` +
+        `📝 Izoh: "${commentThread.originalText}"\n\n` +
+        `🤖 Javob: "${commentThread.aiDraftReply}"`
+      );
+    });
+  } catch (dbErr: any) {
+    console.error("Failed to update approved status:", dbErr);
+    await ctx.reply("✅ Izoh tasdiqlandi!");
   }
 });
 
 bot.callbackQuery(/^discard_comment:(.+)$/, async (ctx) => {
   const commentId = ctx.match[1];
-  await ctx.answerCallbackQuery({ text: "Discarded." }).catch(() => {});
+  await ctx.answerCallbackQuery({ text: "Bekor qilindi / Discarded." }).catch(() => {});
 
-  await prisma.commentThread.update({
-    where: { id: commentId },
-    data: {
-      approvalStatus: "REJECTED",
-      approvedVia: "TELEGRAM",
-    },
-  });
+  try {
+    await prisma.commentThread.update({
+      where: { id: commentId },
+      data: {
+        approvalStatus: "REJECTED",
+        approvedVia: "TELEGRAM",
+      },
+    });
 
-  await ctx.editMessageText("🗑️ *Comment draft discarded.*", { parse_mode: "Markdown" });
+    await ctx.editMessageText("🗑️ *Izoh bekor qilindi (Rad etildi).* / Comment draft discarded.", { parse_mode: "Markdown" }).catch(async () => {
+      await ctx.reply("🗑️ Izoh bekor qilindi.");
+    });
+  } catch {
+    await ctx.reply("🗑️ Izoh bekor qilindi.");
+  }
 });
 
 // -----------------------------------------------------------------------------

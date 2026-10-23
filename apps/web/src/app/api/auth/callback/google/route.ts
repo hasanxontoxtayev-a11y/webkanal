@@ -77,8 +77,8 @@ export async function GET(req: NextRequest) {
           subscriberCount: BigInt(channelItem.statistics?.subscriberCount || 0),
           videoCount: Number(channelItem.statistics?.videoCount || 0),
           viewCount: BigInt(channelItem.statistics?.viewCount || 0),
-          encryptedAccessToken: tokens.access_token || '',
-          encryptedRefreshToken: tokens.refresh_token || '',
+          encryptedAccessToken: tokens.access_token ? encryptToken(tokens.access_token) : 'token',
+          encryptedRefreshToken: tokens.refresh_token ? encryptToken(tokens.refresh_token) : 'token',
           tokenExpiresAt: new Date(tokens.expiry_date || Date.now() + 3600 * 1000),
           tokenScope: tokens.scope || '',
         },
@@ -90,6 +90,10 @@ export async function GET(req: NextRequest) {
           subscriberCount: BigInt(channelItem.statistics?.subscriberCount || 0),
           videoCount: Number(channelItem.statistics?.videoCount || 0),
           viewCount: BigInt(channelItem.statistics?.viewCount || 0),
+          encryptedAccessToken: tokens.access_token ? encryptToken(tokens.access_token) : undefined,
+          encryptedRefreshToken: tokens.refresh_token ? encryptToken(tokens.refresh_token) : undefined,
+          tokenExpiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : undefined,
+          tokenScope: tokens.scope || undefined,
         },
       });
     } catch (dbErr) {

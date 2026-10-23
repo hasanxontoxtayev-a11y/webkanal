@@ -237,6 +237,90 @@
     }
   }
 
+  /**
+   * Directly bridges and extracts VidIQ live statistics if VidIQ extension is active on the page
+   */
+  function extractVidIqLiveDomStats(): {
+    viewsGained7Days?: string;
+    viewsTrend7Days?: string;
+    subscribersDisplay?: string;
+    subGrowthPct?: string;
+    globalRank?: string;
+    estMonthlyEarnings?: string;
+    avgVideoLength?: string;
+    uploadFrequency?: string;
+  } | null {
+    try {
+      const allDivs = Array.from(document.querySelectorAll('div, section, ytd-browse, ytd-tabbed-page-header'));
+      const vidiqHeader = allDivs.find((el) => {
+        const txt = el.textContent || '';
+        return txt.includes('Quick channel stats') && (txt.includes('vidIQ') || txt.includes('vidiq')) && !el.id?.includes('tubepilot');
+      });
+
+      if (!vidiqHeader) return null;
+
+      let cardRoot: Element | null = vidiqHeader;
+      for (let i = 0; i < 5; i++) {
+        if (
+          cardRoot?.parentElement &&
+          (cardRoot.parentElement.innerText || '').includes('Views gained') &&
+          (cardRoot.parentElement.innerText || '').includes('Upload frequency')
+        ) {
+          cardRoot = cardRoot.parentElement;
+          break;
+        }
+        cardRoot = cardRoot?.parentElement || null;
+      }
+
+      const text = cardRoot?.innerText || vidiqHeader.parentElement?.innerText || '';
+      if (!text.includes('Views gained') || !text.includes('Upload frequency')) return null;
+
+      const res: any = {};
+
+      // 1. Views gained (7 days)
+      const vMatch =
+        text.match(/Views gained[^\n\r]*\n+([+\-][\d\s\u00A0]+)\s+([+\-][\d\.,]+%)/i) ||
+        text.match(/Views gained\s*\([^\)]*\)[\s\r\n]*([+\-][\d\s\u00A0]+)[\s\r\n]*([+\-][\d\.,]+%)/i);
+      if (vMatch) {
+        res.viewsGained7Days = vMatch[1].trim();
+        res.viewsTrend7Days = vMatch[2].trim();
+      }
+
+      // 2. Podpischiki
+      const sMatch = text.match(/Подписчики[\s\r\n]+([\d\.,]+\s*[тысмлнKMB]*)[\s\r\n]+([+\-][\d\.,]+%)[\s\r\n]+Ranked[\s\r\n]+([#\d\.,\sтысмлнKMB]+)/i);
+      if (sMatch) {
+        res.subscribersDisplay = sMatch[1].trim();
+        res.subGrowthPct = sMatch[2].trim();
+        res.globalRank = sMatch[3].trim();
+      }
+
+      // 3. Est. monthly earnings
+      const eMatch = text.match(/Est\.\s*monthly\s*earnings[\s\r\n]+([\d\.,\sтысмлнKMB\$\—]+|No data)/i);
+      if (eMatch) {
+        res.estMonthlyEarnings = eMatch[1].trim();
+      }
+
+      // 4. Avg. video length
+      const lMatch = text.match(/Avg\.\s*video\s*length[\s\r\n]+([\d\.,]+\s*minutes?)/i);
+      if (lMatch) {
+        res.avgVideoLength = lMatch[1].trim();
+      }
+
+      // 5. Upload frequency
+      const uMatch = text.match(/Upload\s*frequency[\s\r\n]+([~]?[\d\-–\s]+(?:uploads|videos)\s*(?:per|\/)\s*(?:week|month|mo|wk))/i);
+      if (uMatch) {
+        res.uploadFrequency = uMatch[1].trim();
+      }
+
+      if (res.viewsGained7Days || res.estMonthlyEarnings || res.avgVideoLength) {
+        return res;
+      }
+    } catch {
+      // ignore
+    }
+    return null;
+  }
+
   // ---------------------------------------------------------------------------
   // 3. VidIQ-Parity Channel Quick Stats Card (Dynamic per channel)
   // ---------------------------------------------------------------------------
@@ -307,8 +391,12 @@
     const activeVph = currentAuditedData?.vph?.currentVph || '0 VPH';
     const peakVph = currentAuditedData?.vph?.peakVph || '0 VPH';
     
-    // Dynamic VidIQ Parity Metrics computation
-    const vq = currentAuditedData?.vidiqMetrics;
+    // Dynamic VidIQ Parity Metrics computation: prioritize live VidIQ card if active, else audited
+    const liveVq = extractVidIqLiveDomStats();
+    const vq = {
+      ...(currentAuditedData?.vidiqMetrics || {}),
+      ...(liveVq || {}),
+    };
     const numSubs = parseSubscriberCount(activeSubs);
 
     // 0. Extract actual video durations, view counts, and upload dates directly from the rendered YouTube page

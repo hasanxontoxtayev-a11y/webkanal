@@ -279,13 +279,18 @@ export async function GET(req: NextRequest) {
                 ],
               };
 
+              const safeAuthor = (item.authorDisplayName || 'YouTube Viewer').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              const safeText = (item.originalText || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              const safeReply = (draftReply || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              const safeTitle = (item.videoTitle || 'YouTube Video').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
               const text =
-                `💬 *Yangi YouTube Izohi Keldi!*\n\n` +
-                `🎬 *Video:* ${item.videoTitle}\n` +
-                `👤 *Muallif:* ${item.authorDisplayName} (${item.detectedLanguage})\n` +
-                `📝 *Izoh:* "${item.originalText}"\n\n` +
-                `🤖 *AI Agent Tayyorlagan Javob:*\n"${draftReply}"\n\n` +
-                `_Quyidagi tugma orqali 1-bosishda YouTube'ga joylashingiz mumkin:_`;
+                `💬 <b>Yangi YouTube Izohi Keldi!</b>\n\n` +
+                `🎬 <b>Video:</b> ${safeTitle}\n` +
+                `👤 <b>Muallif:</b> ${safeAuthor} (${item.detectedLanguage})\n` +
+                `📝 <b>Izoh:</b> «${safeText}»\n\n` +
+                `🤖 <b>AI Agent Tayyorlagan Javob:</b>\n«${safeReply}»\n\n` +
+                `<i>Quyidagi tugma orqali 1-bosishda YouTube'ga joylashingiz mumkin:</i>`;
 
               await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                 method: 'POST',
@@ -293,7 +298,7 @@ export async function GET(req: NextRequest) {
                 body: JSON.stringify({
                   chat_id: user.telegramChatId.toString(),
                   text,
-                  parse_mode: 'Markdown',
+                  parse_mode: 'HTML',
                   reply_markup: keyboard,
                 }),
               }).catch((e) => console.warn('Failed to send telegram notification:', e));

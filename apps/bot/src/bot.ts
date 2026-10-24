@@ -3,7 +3,7 @@ import { prisma, LanguageCode } from "@kanal/db";
 import { YouTubeService, resolveYouTubeChannel } from "@kanal/youtube";
 import { GeminiService } from "@kanal/ai";
 
-const token = process.env.TELEGRAM_BOT_TOKEN || "8793624781:AAH50ARJWxJKAS2NTWaeC9ijPaiipTY73P4";
+const token = process.env.TELEGRAM_BOT_TOKEN || "8793624781:AAH2_XewbEEHxkHFRRJ5lM4mvJJlM88gnLk";
 export const bot = new Bot(token);
 
 bot.catch((err) => {

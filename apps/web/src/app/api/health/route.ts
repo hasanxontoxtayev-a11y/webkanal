@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   }
 
   // 2. Check Telegram Bot Runtime & Credentials
-  const botToken = process.env.TELEGRAM_BOT_TOKEN || '8793624781:AAH50ARJWxJKAS2NTWaeC9ijPaiipTY73P4';
+  const botToken = process.env.TELEGRAM_BOT_TOKEN || '8793624781:AAH2_XewbEEHxkHFRRJ5lM4mvJJlM88gnLk';
   let telegramBotStatus: any = { status: 'checking' };
   try {
     const tgRes = await fetch(`https://api.telegram.org/bot${botToken}/getMe`);

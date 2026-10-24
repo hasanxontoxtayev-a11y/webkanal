@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
     // If Telegram bot is paired, send an instant workspace alert
     if (user.telegramChatId) {
       try {
-        const botToken = process.env.TELEGRAM_BOT_TOKEN || '8793624781:AAH50ARJWxJKAS2NTWaeC9ijPaiipTY73P4';
+        const botToken = process.env.TELEGRAM_BOT_TOKEN || '8793624781:AAH2_XewbEEHxkHFRRJ5lM4mvJJlM88gnLk';
         const msg =
           `🚀 **TubePilot Workspace Yangilandi / Workspace Updated!** 📺\n\n` +
           `Aktiv kanal: **${title}** (${handle || ''})\n` +

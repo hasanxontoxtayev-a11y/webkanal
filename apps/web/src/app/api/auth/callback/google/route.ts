@@ -119,7 +119,7 @@ export async function GET(req: NextRequest) {
     // Send instant Telegram notification to THIS SPECIFIC USER'S telegram bot
     if (currentUser?.telegramChatId) {
       try {
-        const botToken = process.env.TELEGRAM_BOT_TOKEN || '8793624781:AAH50ARJWxJKAS2NTWaeC9ijPaiipTY73P4';
+        const botToken = process.env.TELEGRAM_BOT_TOKEN || '8793624781:AAH2_XewbEEHxkHFRRJ5lM4mvJJlM88gnLk';
         const msg =
           `🚀 **TubePilot: Sizning YouTube Kanalingiz Muvaffaqiyatli Bog'landi!** 📺\n\n` +
           `📌 Kanal: **${channelData.title}** (${channelData.handle})\n` +

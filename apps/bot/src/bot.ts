@@ -888,7 +888,7 @@ async function runCommentAutoMonitor() {
 // -----------------------------------------------------------------------------
 // 11. BOT RUNTIME LAUNCHER WITH OFFICIAL TELEGRAM MENU BUTTONS
 // -----------------------------------------------------------------------------
-if (!process.env.NEXT_RUNTIME) {
+if (process.env.RUN_BOT_POLLING === "true" || (!process.env.NEXT_RUNTIME && !process.env.VERCEL)) {
   console.log("Connecting TubePilot AI Telegram Bot runtime...");
 
   bot.api.setMyCommands([

@@ -832,21 +832,15 @@ bot.on("message:text", async (ctx) => {
   }
 
   // 2. If it's a general question (Conversational AI Creator Assistant powered by Google Gemini):
-  const aiThinkingMsg =
-    lang === "ru"
-      ? "🤖 *TubePilot AI анализирует с помощью Google Gemini...*"
-      : lang === "en"
-      ? "🤖 *TubePilot AI is consulting Google Gemini...*"
-      : "🤖 *TubePilot AI Google Gemini orqali tahlil qilmoqda...*";
-
-  const placeholderMsg = await ctx.reply(aiThinkingMsg, { parse_mode: "Markdown" });
+  try {
+    await ctx.replyWithChatAction("typing");
+  } catch {}
 
   try {
     const geminiReply = await GeminiService.askCreatorAssistant(text, lang);
     try {
       await ctx.reply(geminiReply, { parse_mode: "Markdown" });
     } catch (parseErr) {
-      // If Telegram Markdown fails on unclosed asterisks or quotes, send plain text cleanly!
       await ctx.reply(geminiReply);
     }
   } catch (err: any) {

@@ -56,7 +56,7 @@ function DashboardContent() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [subscriptionTier, setSubscriptionTier] = useState<'FREE' | 'PRO' | 'ELITE'>('FREE');
+  const [subscriptionTier, setSubscriptionTier] = useState<'FREE' | 'PRO'>('FREE');
   const [upgradeFeature, setUpgradeFeature] = useState<string | undefined>(undefined);
   const [isChannelConnected, setIsChannelConnected] = useState(false);
   const [channel, setChannel] = useState<ChannelState | null>(null);
@@ -124,7 +124,7 @@ function DashboardContent() {
       .then((res) => res.json())
       .then((data) => {
         if (data.subscription?.tier) {
-          setSubscriptionTier(data.subscription.tier as 'FREE' | 'PRO' | 'ELITE');
+          setSubscriptionTier(data.subscription.tier === 'FREE' ? 'FREE' : 'PRO');
         }
 
         if (data.success && data.channel) {
@@ -261,7 +261,7 @@ function DashboardContent() {
     }
 
     if (searchParams?.get('payment') === 'success') {
-      const tierParam = (searchParams.get('tier')?.toUpperCase() as 'PRO' | 'ELITE') || 'PRO';
+      const tierParam = searchParams.get('tier')?.toUpperCase() === 'FREE' ? 'FREE' : 'PRO';
       setSubscriptionTier(tierParam);
       showNotification(`To'lov muvaffaqiyatli amalga oshirildi! ${tierParam} obunangiz faol.`);
       if (typeof window !== 'undefined' && window.history?.replaceState) {

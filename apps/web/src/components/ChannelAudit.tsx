@@ -41,7 +41,7 @@ export interface ChannelAuditProps {
     avatar: string;
     handle?: string;
   };
-  subscriptionTier?: 'FREE' | 'PRO' | 'ELITE';
+  subscriptionTier?: 'FREE' | 'PRO';
   onUpgradeClick?: (feature?: string) => void;
 }
 
@@ -216,25 +216,25 @@ export function ChannelAudit({
               </div>
 
               {subscriptionTier === 'FREE' ? (
-                <div className="relative rounded-2xl overflow-hidden p-8 border border-purple-500/40 bg-gradient-to-br from-purple-950/40 via-dark-900 to-black text-center space-y-4">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-bold border border-purple-500/30">
+                <div className="relative rounded-2xl overflow-hidden p-8 border border-rose-500/40 bg-gradient-to-br from-rose-950/40 via-dark-900 to-black text-center space-y-4">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 text-xs font-bold border border-rose-500/30">
                     <Crown className="w-3.5 h-3.5" />
-                    PRO & ELITE EXCLUSIVE
+                    PRO EXCLUSIVE ($19)
                   </div>
                   <h3 className="text-xl font-extrabold text-white">
                     Raqobatchilarni to'liq josuslik qilish (Competitor Spy)
                   </h3>
                   <p className="text-xs sm:text-sm text-gray-400 max-w-lg mx-auto">
-                    Raqobatchilaringiz qaysi maxfiy teglardan foydalanayotgani, soatlik real-time ko'rishlar (VPH) va tomoshabinlar oqimini to'liq ko'rish uchun Pro yoki Elite tarifiga o'ting.
+                    Raqobatchilaringiz qaysi maxfiy teglardan foydalanayotgani, soatlik real-time ko'rishlar (VPH) va tomoshabinlar oqimini to'liq ko'rish uchun Pro ($19/oy) tarifiga o'ting.
                   </p>
                   <div className="pt-2 flex justify-center">
                     <button
                       type="button"
                       onClick={() => onUpgradeClick?.("Raqobatchilarni to'liq josuslik qilish (Competitor Spy)")}
-                      className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 via-purple-600 to-indigo-600 hover:from-rose-600 hover:to-indigo-700 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-xl shadow-purple-950/60 hover:scale-105 transition-all"
+                      className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 via-red-600 to-amber-600 hover:from-rose-600 hover:to-amber-700 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-xl shadow-rose-950/60 hover:scale-105 transition-all"
                     >
                       <Sparkles className="w-4 h-4" />
-                      <span>Pro / Elite'ga o'tish (Upgrade)</span>
+                      <span>Pro'ga o'tish ($19/oy • Click/Payme)</span>
                     </button>
                   </div>
                 </div>

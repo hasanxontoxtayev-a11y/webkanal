@@ -108,8 +108,8 @@
       "f5": "Ustuvor AI qayta ishlash va VIP yordam",
       "cta": "Elite'ga o'tish"
     },
-    "gateTitle": "Ushbu imkoniyat Pro / Elite tarifida mavjud",
-    "gateDesc": "Raqobatchilarni chuqur tahlil qilish va cheksiz AI vositalaridan foydalanish uchun tarifingizni yangilang.",
+    "gateTitle": "Ushbu imkoniyat Pro tarifida mavjud",
+    "gateDesc": "Raqobatchilarni chuqur tahlil qilish, Telegram bot signallari va cheksiz AI vositalaridan foydalanish uchun Pro tarifiga o'ting.",
     "switchSuccess": "Tarifingiz muvaffaqiyatli yangilandi!"
   }
 }

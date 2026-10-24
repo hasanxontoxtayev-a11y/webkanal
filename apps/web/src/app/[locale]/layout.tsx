@@ -137,14 +137,7 @@ export default async function LocaleLayout({
             name: 'Pro Plan',
             price: '19',
             priceCurrency: 'USD',
-            description: 'Unlimited SEO audit, AI automated tagging, and comment copilot.',
-          },
-          {
-            '@type': 'Offer',
-            name: 'Elite Plan',
-            price: '49',
-            priceCurrency: 'USD',
-            description: 'Full competitor spy telemetry, VIP Telegram bot alerts, and predictive CTR models.',
+            description: 'Unlimited SEO audit, AI automated tagging, comment copilot, competitor spy, and Telegram VIP alerts.',
           },
         ],
         featureList: [

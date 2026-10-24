@@ -230,7 +230,7 @@ export async function GET(req: NextRequest) {
             });
 
             const vidId = `vid_${Math.abs(item.videoTitle.split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0)).toString(36)}`;
-            await prisma.youtubeVideo.upsert({
+            await prisma.youTubeVideo.upsert({
               where: { id: vidId },
               create: {
                 id: vidId,

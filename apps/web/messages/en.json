@@ -108,8 +108,8 @@
       "f5": "Priority AI processing & dedicated support",
       "cta": "Upgrade to Elite"
     },
-    "gateTitle": "This feature requires Pro or Elite",
-    "gateDesc": "Unlock competitor intelligence, unlimited AI audits, and automated growth copilot.",
+    "gateTitle": "This feature requires Pro",
+    "gateDesc": "Unlock competitor intelligence, unlimited AI audits, and automated growth copilot for just $19/mo.",
     "switchSuccess": "Subscription upgraded successfully!"
   }
 }

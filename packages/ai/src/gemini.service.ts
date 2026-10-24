@@ -174,15 +174,16 @@ Answer the creator's question with deep expertise on YouTube algorithms, CTR, au
 Respond naturally, fluently and helpfully in ${language === "ru" ? "RUSSIAN" : language === "en" ? "ENGLISH" : "UZBEK"}.
 Format your reply cleanly with Markdown bullet points and actionable steps.`;
 
-      // Active Google Gemini models - prioritize 3.8-flash with ultra fast 4s timeout
+      // Active Google Gemini models - gemini-3.5-flash-lite is lightning fast and highly responsive
       const candidateModels = [
-        "gemini-3.8-flash",
+        "gemini-3.5-flash-lite",
+        "gemini-3.5-flash",
       ];
 
       for (const model of candidateModels) {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 4000);
+          const timeoutId = setTimeout(() => controller.abort(), 15000);
 
           const res = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,

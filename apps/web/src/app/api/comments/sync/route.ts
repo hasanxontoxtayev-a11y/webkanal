@@ -16,46 +16,44 @@ export interface RealYouTubeComment {
 async function fetchLiveYouTubeComments(handleOrQuery: string): Promise<RealYouTubeComment[]> {
   const cleanHandle = handleOrQuery.startsWith('@') ? handleOrQuery : `@${handleOrQuery}`;
 
-  // 1. Find recent videos for this channel
+  // 1. Find recent videos for this channel (Search gives immediate, up-to-date video IDs)
   let videoList: { id: string; title: string }[] = [];
 
   try {
-    const channelRes = await fetch(`https://www.youtube.com/${encodeURIComponent(cleanHandle)}/videos`, {
+    const sRes = await fetch(`https://www.youtube.com/results?search_query=${encodeURIComponent(cleanHandle)}`, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
         'Accept-Language': 'uz-UZ,uz;q=0.9,ru;q=0.8,en;q=0.7',
       },
-      next: { revalidate: 60 },
     });
-
-    if (channelRes.ok) {
-      const html = await channelRes.text();
-      const matches = [...html.matchAll(/\/watch\?v=([a-zA-Z0-9_-]{11})/g)];
+    if (sRes.ok) {
+      const sHtml = await sRes.text();
+      const matches = [...sHtml.matchAll(/\/watch\?v=([a-zA-Z0-9_-]{11})/g)];
       const uniqueIds = [...new Set(matches.map((m) => m[1]))].slice(0, 10);
-
       for (const vid of uniqueIds) {
         videoList.push({ id: vid, title: `${cleanHandle} Video` });
       }
     }
   } catch (err) {
-    console.warn('[YouTube Scraper] Error fetching channel videos:', err);
+    console.warn('[YouTube Scraper] Search videos extraction failed:', err);
   }
 
-  // Fallback: search videos if direct channel page didn't yield video IDs
+  // Fallback: direct channel page
   if (videoList.length === 0) {
     try {
-      const sRes = await fetch(`https://www.youtube.com/results?search_query=${encodeURIComponent(handleOrQuery)}`, {
+      const channelRes = await fetch(`https://www.youtube.com/${encodeURIComponent(cleanHandle)}`, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
           'Accept-Language': 'uz-UZ,uz;q=0.9,ru;q=0.8,en;q=0.7',
         },
       });
-      if (sRes.ok) {
-        const sHtml = await sRes.text();
-        const matches = [...sHtml.matchAll(/\/watch\?v=([a-zA-Z0-9_-]{11})/g)];
+
+      if (channelRes.ok) {
+        const html = await channelRes.text();
+        const matches = [...html.matchAll(/\/watch\?v=([a-zA-Z0-9_-]{11})/g)];
         const uniqueIds = [...new Set(matches.map((m) => m[1]))].slice(0, 10);
         for (const vid of uniqueIds) {
-          videoList.push({ id: vid, title: `${handleOrQuery} Upload` });
+          videoList.push({ id: vid, title: `${cleanHandle} Video` });
         }
       }
     } catch {}

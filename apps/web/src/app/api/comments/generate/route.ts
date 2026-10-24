@@ -25,7 +25,7 @@ Rules:
 3. Keep it within 1-2 friendly sentences.
 4. Add 1 appropriate emoji.`;
 
-        const candidateModels = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+        const candidateModels = ['gemini-3.5-flash-lite', 'gemini-3.5-flash'];
         for (const model of candidateModels) {
           try {
             const controller = new AbortController();

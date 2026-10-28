@@ -172,11 +172,11 @@ function DashboardContent() {
               const parsed = JSON.parse(saved);
               if (parsed && (parsed.title || parsed.handle)) {
                 setChannel({
-                  title: parsed.title && parsed.title !== 'Kanal ulanmagan' ? parsed.title : (parsed.handle ? parsed.handle.replace('@', '') : 'VELORA'),
-                  subscribers: parsed.subscribers && parsed.subscribers !== '0' ? parsed.subscribers : '607',
-                  views: parsed.views && parsed.views !== '0' ? parsed.views : '207,132',
+                  title: parsed.title && parsed.title !== 'Kanal ulanmagan' ? parsed.title : (parsed.handle ? parsed.handle.replace('@', '') : 'YouTube Channel'),
+                  subscribers: parsed.subscribers && parsed.subscribers !== '0' ? parsed.subscribers : '0',
+                  views: parsed.views && parsed.views !== '0' ? parsed.views : '0',
                   avatar: parsed.avatar || FALLBACK_AVATAR,
-                  handle: parsed.handle || '@velora-p5n',
+                  handle: parsed.handle || '@channel',
                   isPaired: true,
                 });
                 setIsChannelConnected(true);

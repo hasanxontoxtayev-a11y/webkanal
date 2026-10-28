@@ -149,8 +149,7 @@ export function ConnectChannelModal({
             <div className="flex gap-2">
               <input
                 type="text"
-                placeholder="Masalan: @velora-p5n yoki YouTube URL"
-                defaultValue="@velora-p5n"
+                placeholder="Masalan: @sizning_kanalingiz yoki YouTube URL"
                 id="instant_channel_input"
                 className="flex-1 bg-dark-900 border border-slate-700 focus:border-malla-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 outline-none"
               />
@@ -158,7 +157,11 @@ export function ConnectChannelModal({
                 type="button"
                 onClick={async () => {
                   const input = document.getElementById('instant_channel_input') as HTMLInputElement;
-                  const query = input?.value?.trim() || '@velora-p5n';
+                  const query = input?.value?.trim();
+                  if (!query) {
+                    alert("Iltimos, avval YouTube kanalingiz @handle yoki havolasini kiriting.");
+                    return;
+                  }
                   setLoading(true);
                   try {
                     const res = await fetch(`/api/channels/audit?q=${encodeURIComponent(query)}`);
@@ -167,9 +170,9 @@ export function ConnectChannelModal({
                       const d = json.data;
                       const channelPayload = {
                         title: d.channelTitle || query.replace('@', ''),
-                        subscribers: d.subscribers || '607',
-                        views: d.totalViews || '207,132',
-                        avatar: d.avatarUrl || 'https://yt3.ggpht.com/GoOGcR0ck5VRCkqt2UAubdPZqSbz5eHOzR1Nui5SECFb5WNLDNFHYXpDkOgv_dfDZDguWok6KQ=s176-c-k-c0x00ffffff-no-rj-mo',
+                        subscribers: d.subscribers || '0',
+                        views: d.totalViews || '0',
+                        avatar: d.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80',
                         handle: d.channelHandle || (query.startsWith('@') ? query : `@${query}`),
                         isPaired: true,
                       };

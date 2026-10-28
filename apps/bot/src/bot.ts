@@ -865,8 +865,8 @@ async function runCommentAutoMonitor() {
     });
 
     for (const u of users) {
-      if (!u.telegramChatId) continue;
-      const targetHandle = u.channel?.customUrl || '@velora-p5n';
+      if (!u.telegramChatId || !u.channel?.customUrl) continue;
+      const targetHandle = u.channel.customUrl;
 
       const dashboardBase = getDashboardUrl();
       const syncUrl = `${dashboardBase}/api/comments/sync?channel=${encodeURIComponent(targetHandle)}`;

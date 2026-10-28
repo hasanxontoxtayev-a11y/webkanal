@@ -29,14 +29,14 @@ export async function GET(req: NextRequest) {
               connected: true,
               channel: {
                 id: parsed.handle || 'UC_custom',
-                title: parsed.title || 'VELORA',
-                handle: parsed.handle || '@velora-p5n',
+                title: parsed.title || 'YouTube Channel',
+                handle: parsed.handle || '@channel',
                 avatar: parsed.avatar || '',
-                subscribers: parsed.subscribers || '607',
-                rawSubscribers: 607,
-                views: parsed.views || '207,132',
-                rawViews: 207132,
-                videoCount: 333,
+                subscribers: parsed.subscribers || '0',
+                rawSubscribers: 0,
+                views: parsed.views || '0',
+                rawViews: 0,
+                videoCount: parsed.videoCount || 0,
                 isPaired: true,
               },
               token: 'tp_extension_bridge_v1',
@@ -111,23 +111,12 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Fallback active state for paired extension
+    // Clean disconnected state if no channel attached
     return NextResponse.json(
       {
         success: true,
-        connected: true,
-        channel: {
-          id: 'UC_velora',
-          title: 'VELORA',
-          handle: '@velora-p5n',
-          avatar: 'https://yt3.ggpht.com/GoOGcR0ck5VRCkqt2UAubdPZqSbz5eHOzR1Nui5SECFb5WNLDNFHYXpDkOgv_dfDZDguWok6KQ=s176-c-k-c0x00ffffff-no-rj-mo',
-          subscribers: '607',
-          rawSubscribers: 607,
-          views: '207,132',
-          rawViews: 207132,
-          videoCount: 333,
-          isPaired: true,
-        },
+        connected: false,
+        channel: null,
         token: 'tp_extension_bridge_v1',
         dashboardUrl: 'https://www.tubepilotpro.com/uz/dashboard',
       },

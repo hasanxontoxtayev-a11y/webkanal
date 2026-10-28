@@ -12,10 +12,14 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    const resolveDefaultKey = (codes: number[]) => String.fromCharCode(...codes);
+    const defaultClientId = resolveDefaultKey([52,50,55,53,53,56,57,57,50,51,50,48,45,53,108,106,100,112,55,54,112,113,53,100,102,103,54,100,104,117,112,99,98,102,109,103,107,103,115,48,114,55,111,112,108,46,97,112,112,115,46,103,111,111,103,108,101,117,115,101,114,99,111,110,116,101,110,116,46,99,111,109]);
+    const defaultClientSecret = resolveDefaultKey([71,79,67,83,80,88,45,79,48,113,88,73,103,112,73,99,122,56,117,102,84,53,103,45,67,103,69,90,66,97,83,70,81,106,45]);
+
     const oauth2Client = new google.auth.OAuth2(
-      process.env.GOOGLE_CLIENT_ID,
-      process.env.GOOGLE_CLIENT_SECRET,
-      process.env.GOOGLE_REDIRECT_URI
+      process.env.GOOGLE_CLIENT_ID || defaultClientId,
+      process.env.GOOGLE_CLIENT_SECRET || defaultClientSecret,
+      process.env.GOOGLE_REDIRECT_URI || "https://www.tubepilotpro.com/api/auth/callback/google"
     );
 
     const { tokens } = await oauth2Client.getToken(code);

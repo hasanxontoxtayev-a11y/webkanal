@@ -112,7 +112,7 @@ export function TelegramPairingCard({ isPaired: initialPaired, telegramUsername:
         {paired ? (
           <span className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-black rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 animate-fadeIn">
             <CheckCircle2 className="w-4 h-4" />
-            Ulangan: {username ? `@${username}` : '@Tuble_Pilot_bot'}
+            Ulangan: {username ? `@${username}` : '@tubepilotai_bot'}
           </span>
         ) : (
           <span className="px-3 py-1 text-xs font-bold rounded-full bg-malla-500/15 text-malla-300 border border-malla-400/30">
@@ -126,7 +126,7 @@ export function TelegramPairingCard({ isPaired: initialPaired, telegramUsername:
           {!deepLink ? (
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <p className="text-xs text-slate-300 max-w-md">
-                Tugmani bosing va Telegramdagi <span className="text-malla-300 font-bold">@Tuble_Pilot_bot</span> bilan YouTube kanalingizni 1 soniyada bog&apos;lang.
+                Tugmani bosing va Telegramdagi <span className="text-malla-300 font-bold">@tubepilotai_bot</span> bilan YouTube kanalingizni 1 soniyada bog&apos;lang.
               </p>
               <button
                 onClick={generateLink}
@@ -167,7 +167,7 @@ export function TelegramPairingCard({ isPaired: initialPaired, telegramUsername:
                 <div className="md:col-span-2 flex flex-col justify-center space-y-3">
                   <div>
                     <h5 className="text-sm font-bold text-white flex items-center gap-2">
-                      <span>@Tuble_Pilot_bot ga ulanishga tayyor</span>
+                      <span>@tubepilotai_bot ga ulanishga tayyor</span>
                       <span className="text-[10px] text-emerald-400 font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">Kutilmoqda...</span>
                     </h5>
                     <p className="text-xs text-slate-300 mt-1 leading-relaxed">
@@ -184,7 +184,7 @@ export function TelegramPairingCard({ isPaired: initialPaired, telegramUsername:
                       className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-malla-600 via-amber-600 to-malla-500 hover:from-malla-500 hover:to-amber-500 text-white text-xs font-black transition-all shadow-xl shadow-malla-950/60 hover:scale-[1.02] active:scale-[0.98]"
                     >
                       <ExternalLink className="w-4 h-4" />
-                      <span>Telegramda Ochish (@Tuble_Pilot_bot)</span>
+                      <span>Telegramda Ochish (@tubepilotai_bot)</span>
                     </a>
 
                     <button

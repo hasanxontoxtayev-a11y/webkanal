@@ -670,7 +670,7 @@ function DashboardContent() {
           isPaired={!!channel?.isPaired}
           onPairSuccess={(username?: string) => {
             setChannel((prev) => (prev ? { ...prev, isPaired: true } : prev));
-            showNotification(`Telegram paired with @${username || 'Tuble_Pilot_bot'}!`);
+            showNotification(`Telegram paired with @${username || 'tubepilotai_bot'}!`);
           }}
         />
 

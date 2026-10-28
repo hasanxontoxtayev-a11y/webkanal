@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     const rawUsername =
       process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME ||
       process.env.TELEGRAM_BOT_USERNAME ||
-      'Tuble_Pilot_bot';
+      'tubepilotai_bot';
     const botUsername = rawUsername.replace(/^@/, '');
     const deepLink = `https://t.me/${botUsername}?start=link_${pairToken}`;
 

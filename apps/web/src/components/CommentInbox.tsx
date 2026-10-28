@@ -365,7 +365,7 @@ export function CommentInbox({ connectedChannelTitle = 'YouTube Kanali', connect
                   {/* Actions */}
                   <div className="flex items-center justify-between pt-2 border-t border-dark-800">
                     <span className="text-[10px] text-gray-500">
-                      Syncs with @Tuble_Pilot_bot for 1-tap mobile push
+                      Syncs with @tubepilotai_bot for 1-tap mobile push
                     </span>
 
                     <div className="flex items-center gap-2">

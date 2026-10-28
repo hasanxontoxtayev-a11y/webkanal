@@ -12,7 +12,7 @@ export function TelegramHelpButton({
   label = "Ask Bot",
   className = "",
 }: TelegramHelpButtonProps) {
-  const rawUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "Tuble_Pilot_bot";
+  const rawUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "tubepilotai_bot";
   const botUsername = rawUsername.replace(/^@/, '');
   const telegramUrl = `https://t.me/${botUsername}?start=help_${featureKey}`;
 

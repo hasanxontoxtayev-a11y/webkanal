@@ -156,7 +156,7 @@ export default async function LocaleLayout({
         alternateName: ['TurboPilot', 'TurboPilot AI'],
         url: 'https://tubepilot.ai',
         logo: 'https://tubepilot.ai/logo.png',
-        sameAs: ['https://t.me/Tuble_Pilot_bot'],
+        sameAs: ['https://t.me/tubepilotai_bot'],
       },
       {
         '@type': 'WebSite',

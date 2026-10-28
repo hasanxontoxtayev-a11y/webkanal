@@ -1,7 +1,7 @@
 {
   "name": "@kanal/extension",
   "version": "1.0.0",
-  "description": "TubePilot AI — Universal YouTube HUD & Studio Copilot Extension (VidIQ Alternative)",
+  "description": "TubePilot AI — Universal YouTube HUD & Studio Copilot Extension",
   "scripts": {
     "build": "node build.js",
     "dev": "node build.js --watch"

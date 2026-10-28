@@ -41,8 +41,8 @@ const CHAPTERS: Chapter[] = [
     start: 0,
     end: 15,
     title: {
-      uz: '1-Bosishda Kanalni Ulash & VidIQ Ishchi Maydoni',
-      ru: 'Подключение канала в 1 клик & Рабочая область VidIQ',
+      uz: '1-Bosishda Kanalni Ulash & TubePilot Ishchi Maydoni',
+      ru: 'Подключение канала в 1 клик & Рабочая область TubePilot',
       en: '1-Click Channel Workspace Sync & Live Header',
     },
     badge: {
@@ -94,9 +94,9 @@ const CHAPTERS: Chapter[] = [
       en: 'Global Channel Audit & Regional RPM Revenue Engine',
     },
     badge: {
-      uz: 'VidIQ Growth Engine',
+      uz: 'TubePilot Growth Engine',
       ru: 'Аналитика охватов',
-      en: 'VidIQ Competitor Spy',
+      en: 'Competitor Spy Engine',
     },
     icon: Activity,
     color: 'from-emerald-500 to-teal-600',
@@ -238,7 +238,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
                   Interactive Video Tour
                 </span>
               </div>
-              <p className="text-[11px] text-gray-400">Complete VidIQ-Killer Creator Platform Walkthrough</p>
+              <p className="text-[11px] text-gray-400">Complete YouTube AI Creator Platform Walkthrough</p>
             </div>
           </div>
 
@@ -392,7 +392,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-bold text-white flex items-center gap-1.5">
                     <Activity className="w-3.5 h-3.5 text-emerald-400" />
-                    VidIQ Localized Revenue Diagnostic
+                    Localized Revenue Diagnostic
                   </span>
                   <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold">
                     🇺🇿 Uzbekistan & CIS ($0.35 – $0.90 RPM)

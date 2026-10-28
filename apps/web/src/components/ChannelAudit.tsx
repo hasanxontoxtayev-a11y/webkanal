@@ -100,7 +100,7 @@ export function ChannelAudit({
           <div className="flex items-center gap-2.5 mb-2">
             <span className="px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase bg-malla-500/20 text-malla-300 border border-malla-400/30 flex items-center gap-1.5 shadow-sm">
               <Zap className="w-3.5 h-3.5 text-malla-400" />
-              VidIQ-Style Growth Engine
+              TubePilot Growth Engine
             </span>
             <TelegramHelpButton featureKey="overview" label="Audit in Telegram" />
             <button
@@ -199,7 +199,7 @@ export function ChannelAudit({
                     <h3 className="text-base font-extrabold text-white flex items-center gap-2">
                       <span>Competitor Spy: Head-to-Head Analysis</span>
                       <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30">
-                        Live VidIQ Matrix
+                        Live Matrix
                       </span>
                     </h3>
                     <p className="text-xs text-gray-400">Comparing your connected workspace against searched competitor</p>
@@ -590,14 +590,14 @@ export function ChannelAudit({
 
           {/* Two-Column Audit Details: Checklist vs Outliers */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* VidIQ Checklist */}
+            {/* Audit Checklist */}
             <div className="p-6 rounded-2xl bg-dark-900/80 border border-dark-700 space-y-4">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
                   <Award className="w-4 h-4 text-rose-500" />
                   Video SEO & Factor Audit Checklist
                 </h4>
-                <span className="text-xs font-semibold text-gray-400">VidIQ Standard</span>
+                <span className="text-xs font-semibold text-gray-400">TubePilot Standard</span>
               </div>
 
               <div className="divide-y divide-dark-800">

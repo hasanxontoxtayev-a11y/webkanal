@@ -101,7 +101,7 @@ export default async function Image() {
             marginBottom: '40px',
           }}
         >
-          VidIQ & TubeBuddy Alternative powered by Multimodal AI Vision, Comment Copilot & Telegram Companion Workflows
+          Autonomous YouTube AI Copilot powered by Multimodal AI Vision, Comment Copilot & Telegram Companion Workflows
         </div>
 
         {/* Feature Pills */}

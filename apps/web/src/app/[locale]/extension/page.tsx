@@ -51,7 +51,7 @@ export default function ExtensionInstallPage() {
         <div className="text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold">
             <Sparkles className="w-4 h-4" />
-            <span>VidIQ Muqobili — 100% Bepul va Rasmiy O'rnatish</span>
+            <span>TubePilot AI Kengaytmasi — 100% Bepul va Rasmiy O'rnatish</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
@@ -62,7 +62,7 @@ export default function ExtensionInstallPage() {
           </h1>
 
           <p className="text-gray-400 text-sm sm:text-base max-w-2xl mx-auto">
-            YouTube sahifasiga kirganingizda VidIQ kabi jonli statistika (VPH, haftalik ko'rishlar, oylik daromad va AI yordamchi) avtomatik chiqishi uchun ushbu kengaytmani brauzeringizga qo'shing.
+            YouTube sahifasiga kirganingizda jonli tahlillar (VPH tezligi, haftalik ko'rishlar, oylik daromad va AI yordamchi) avtomatik chiqishi uchun ushbu kengaytmani brauzeringizga qo'shing.
           </p>
 
           <div className="pt-4 flex flex-wrap items-center justify-center gap-4">

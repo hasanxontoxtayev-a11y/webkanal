@@ -352,7 +352,7 @@ function DashboardContent() {
           <TubePilotLogo size="md" showText={true} />
         </Link>
 
-        {/* VidIQ-Style Connected Workspace Header Bar OR Prominent Connect Button */}
+        {/* Connected Workspace Header Bar OR Prominent Connect Button */}
         {isChannelConnected && channel ? (
           <div className="flex items-center gap-2.5 p-1.5 pr-2.5 rounded-2xl bg-dark-850/90 border border-emerald-500/30 shadow-lg shadow-emerald-950/20 animate-fadeIn">
             <img
@@ -439,12 +439,12 @@ function DashboardContent() {
             )}
           </button>
 
-          {/* Chrome Extension HUD Button */}
+          {/* YouTube Extension HUD Button */}
           <a
             href="/api/extension/download"
             download="tubepilot-extension.zip"
             className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-black rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white transition-all shadow-md shadow-emerald-950/40 active:scale-95 border border-emerald-400/40 cursor-pointer"
-            title="VidIQ kabi YouTube ichida ko'rinadigan TubePilot Chrome Kengaytmasini yuklab olish"
+            title="YouTube ichida jonli tahlillarni ko'rsatuvchi TubePilot Chrome Kengaytmasini yuklab olish"
           >
             <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
             <span>🚀 YouTube HUD (Kengaytma)</span>
@@ -677,7 +677,7 @@ function DashboardContent() {
         {/* AI SEO & Viral Tag Generator Section */}
         <AiTagGenerator />
 
-        {/* VidIQ-Style Channel Audit & Growth Diagnostic */}
+        {/* TubePilot Channel Audit & Growth Diagnostic */}
         <ChannelAudit
           onConnectChannel={handleDemoConnect}
           connectedHandle={channel?.handle}

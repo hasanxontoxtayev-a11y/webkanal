@@ -173,7 +173,7 @@ function PricingContent() {
         <div className="text-center max-w-3xl mx-auto mb-12">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold mb-4 shadow-sm">
             <Sparkles className="w-3.5 h-3.5" />
-            VidIQ & TubeBuddy Alternative — Click &amp; Payme Qo&apos;llab-quvvatlanadi
+            TubePilot AI Pro — Click &amp; Payme Qo&apos;llab-quvvatlanadi
           </div>
           <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
             {t('title')}
@@ -436,7 +436,7 @@ function PricingContent() {
         {/* Feature Comparison Matrix */}
         <div className="max-w-4xl mx-auto mb-20 bg-gray-900/40 border border-gray-800 rounded-3xl p-6 sm:p-8 backdrop-blur-sm">
           <h2 className="text-xl sm:text-2xl font-bold text-white text-center mb-6">
-            VidIQ & TubeBuddy imkoniyatlari taqqoslash
+            Tariflar imkoniyatlari taqqoslash
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs sm:text-sm">

@@ -28,7 +28,7 @@ export function AiTagGenerator() {
     { tag: 'youtube growth 2026', score: 94, competition: 'LOW', volume: '142K/oy' },
     { tag: 'how to get more views', score: 88, competition: 'MEDIUM', volume: '310K/oy' },
     { tag: 'youtube algorithm secrets', score: 92, competition: 'LOW', volume: '95K/oy' },
-    { tag: 'vidiq best settings', score: 85, competition: 'LOW', volume: '48K/oy' },
+    { tag: 'youtube tags generator', score: 85, competition: 'LOW', volume: '48K/oy' },
     { tag: 'youtube seo tutorial', score: 89, competition: 'MEDIUM', volume: '180K/oy' },
     { tag: 'viral video tips', score: 81, competition: 'HIGH', volume: '520K/oy' },
   ]);

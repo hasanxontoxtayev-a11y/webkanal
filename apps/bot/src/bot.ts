@@ -67,7 +67,7 @@ export async function sendIntroHelpGuide(ctx: any) {
     keyboard.text("❓ FAQ", "btn_faq_uz");
 
     const message =
-      `🚀 **TubePilot AI — Avtonom YouTube Kopiloti & VidIQ Muqobili** 📺\n\n` +
+      `🚀 **TubePilot AI — Avtonom YouTube Kopiloti** 📺\n\n` +
       `TubePilot AI — YouTube ijodkorlari va kanallarini jadal rivojlantirish uchun maxsus ishlab chiqilgan ilg'or multimodal sun'iy intellekt platformasidir. U kanalingizni avtopilot rejimida boshqarish va algoritmlarda yetakchilik qilishga yordam beradi.\n\n` +
       `🔥 **Asosiy Imkoniyatlar:**\n\n` +
       `1️⃣ 💬 **AI Comment Copilot (Izohlar Kopiloti):**\n` +
@@ -82,7 +82,7 @@ export async function sendIntroHelpGuide(ctx: any) {
       `4️⃣ 💰 **Hududiy RPM Daromad Kalkulyatori:**\n` +
       `• O'zbekiston va MDH bozori ($0.35–$0.90 RPM) hamda AQSH/Global bozor ($2.00–$4.00 RPM) uchun AdSense va homiylik daromadini real tahlil qiladi.\n\n` +
       `💡 **Foydali Buyruqlar:**\n` +
-      `• \`/audit <kanal>\` — Istalgan kanalni VidIQ uslubida audit qilish (masalan: \`/audit @kunuz_official\` yoki \`/audit Subyektiv\`)\n` +
+      `• \`/audit <kanal>\` — Istalgan kanalni professional audit qilish (masalan: \`/audit @kunuz_official\` yoki \`/audit Subyektiv\`)\n` +
       `• \`/channel\` — Ulangan ishchi kanal holati\n` +
       `• \`/lang\` — Tilni o'zgartirish (UZ / RU / EN)\n` +
       `• 📸 Istalgan muqova rasmini shu chatga yuboring — bot CTR tahlilini beradi!\n\n` +
@@ -108,7 +108,7 @@ export async function sendIntroHelpGuide(ctx: any) {
     keyboard.text("❓ FAQ", "btn_faq_ru");
 
     const message =
-      `🚀 **TubePilot AI — Автономный YouTube Копилот & Альтернатива VidIQ** 📺\n\n` +
+      `🚀 **TubePilot AI — Автономный YouTube Копилот** 📺\n\n` +
       `TubePilot AI — это мультимодальная платформа искусственного интеллекта нового поколения для авторов YouTube, студий и медиа-проектов для масштабирования охватов и монетизации.\n\n` +
       `🔥 **Ключевые Возможности:**\n\n` +
       `1️⃣ 💬 **AI Comment Copilot (Автопилот комментариев):**\n` +
@@ -149,7 +149,7 @@ export async function sendIntroHelpGuide(ctx: any) {
     keyboard.text("❓ FAQ", "btn_faq_en");
 
     const message =
-      `🚀 **TubePilot AI — Autonomous YouTube Copilot & VidIQ Alternative** 📺\n\n` +
+      `🚀 **TubePilot AI — Autonomous YouTube Copilot** 📺\n\n` +
       `TubePilot AI is an advanced multimodal AI growth platform engineered specifically for modern YouTube creators, studios, and agencies to automate audience engagement, CTR optimization, and earnings.\n\n` +
       `🔥 **Key Features:**\n\n` +
       `1️⃣ 💬 **AI Comment Copilot:**\n` +
@@ -229,14 +229,14 @@ bot.command("start", async (ctx) => {
   const startMsg =
     lang === "ru"
       ? `👋 **Добро пожаловать в TubePilot AI!** 🚀\n\n` +
-        `Автономный ИИ-копилот и альтернатива VidIQ для авторов YouTube.\n\n` +
+        `Автономный ИИ-копилот для авторов YouTube.\n\n` +
         `💡 **Что вы можете сделать прямо сейчас:**\n` +
         `• Задайте **любой вопрос** по YouTube (алгоритмы, теги, названия, монетизация) — Gemini AI ответит мгновенно!\n` +
         `• Отправьте фото обложки для проверки CTR Vision.\n` +
         `• Введите \`@канал\` (например \`@kunuz\`) для мгновенного аудита.\n\n` +
         `👉 Подробное руководство: нажмите /help`
       : `👋 **TubePilot AI — YouTube Kopilotiga Xush Kelibsiz!** 🚀\n\n` +
-        `YouTube ijodkorlari uchun VidIQ muqobili bo'lgan sun'iy intellekt tizimi.\n\n` +
+        `YouTube ijodkorlari uchun avtonom sun'iy intellekt tizimi.\n\n` +
         `💡 **Bot imkoniyatlari:**\n` +
         `• YouTube bo'yicha **istalgan savolingizni yozing** (algoritm, obunachi yig'ish, CTR, daromad) — Google Gemini darhol batafsil javob beradi!\n` +
         `• Videongiz muqovasini (rasmini) yuborib, CTR Vision tahlilini oling.\n` +
@@ -405,7 +405,7 @@ bot.callbackQuery(/^btn_faq_(uz|ru|en)$/, async (ctx) => {
     await ctx.reply(
       `❓ **TubePilot AI — Частые вопросы (FAQ):**\n\n` +
       `1️⃣ **Что такое TubePilot AI?**\n` +
-      `Это автономный ИИ-копилот и альтернатива VidIQ для ютуберов. Платформа помогает отвечать на комментарии зрителей, проверять обложки перед публикацией и прогнозировать доходы.\n\n` +
+      `Это автономный ИИ-копилот для ютуберов. Платформа помогает отвечать на комментарии зрителей, проверять обложки перед публикацией и прогнозировать доходы.\n\n` +
       `2️⃣ **Как работает автопилот комментариев?**\n` +
       `ИИ анализирует суть вопроса зрителя и готовит черновик ответа в вашем авторском стиле. Ответ отправляется на YouTube ТОЛЬКО после того, как вы нажмете кнопку "Одобрить" в Telegram или на сайте.\n\n` +
       `3️⃣ **Как проверить обложку (CTR Vision)?**\n` +
@@ -418,7 +418,7 @@ bot.callbackQuery(/^btn_faq_(uz|ru|en)$/, async (ctx) => {
     await ctx.reply(
       `❓ **TubePilot AI — Frequently Asked Questions (FAQ):**\n\n` +
       `1️⃣ **What is TubePilot AI?**\n` +
-      `It is an autonomous YouTube growth copilot and VidIQ alternative. It automates audience engagement, checks thumbnail CTR potential with Gemini Vision, and monitors real-time views per hour.\n\n` +
+      `It is an autonomous YouTube growth copilot. It automates audience engagement, checks thumbnail CTR potential with Gemini Vision, and monitors real-time views per hour.\n\n` +
       `2️⃣ **Does the AI post comments automatically?**\n` +
       `No! We enforce a strict human-in-the-loop policy. The AI drafts smart replies in the creator's voice, but nothing is posted to YouTube until you click "Approve" via Telegram or web dashboard.\n\n` +
       `3️⃣ **How does Thumbnail CTR Vision work?**\n` +
@@ -431,7 +431,7 @@ bot.callbackQuery(/^btn_faq_(uz|ru|en)$/, async (ctx) => {
     await ctx.reply(
       `❓ **TubePilot AI — Ko'p Beriladigan Savollar (FAQ):**\n\n` +
       `1️⃣ **TubePilot AI nima va u kimlar uchun?**\n` +
-      `TubePilot AI — YouTube ijodkorlari va studiyalar uchun VidIQ muqobili bo'lgan avtonom sun'iy intellekt kopilotidir. U auditoriya bilan muloqotni avtomatlashtirish, muqova CTR'ini oshirish va daromadni oshirish uchun xizmat qiladi.\n\n` +
+      `TubePilot AI — YouTube ijodkorlari va studiyalar uchun avtonom sun'iy intellekt kopilotidir. U auditoriya bilan muloqotni avtomatlashtirish, muqova CTR'ini oshirish va daromadni oshirish uchun xizmat qiladi.\n\n` +
       `2️⃣ **AI izohlarga o'zboshimchalik bilan javob berib yubormaydimi?**\n` +
       `Yo'q! Tizim "Human-in-the-loop" xavfsizlik printsipida ishlaydi. AI sizning uslubingizda eng zo'r javobni tayyorlab beradi, siz Telegram yoki veb-panelda "Tasdiqlash" tugmasini bosganingizdagina u YouTube'ga yuboriladi.\n\n` +
       `3️⃣ **Muqova CTR Vision qanday ishlaydi?**\n` +
@@ -488,7 +488,7 @@ bot.command("channel", async (ctx) => {
 });
 
 // -----------------------------------------------------------------------------
-// 6. /audit COMMAND: VIDIQ-STYLE DIAGNOSTICS WITH REALISTIC EARNINGS
+// 6. /audit COMMAND: ADVANCED CHANNEL DIAGNOSTICS WITH REALISTIC EARNINGS
 // -----------------------------------------------------------------------------
 bot.command("audit", async (ctx) => {
   const query = ctx.match?.trim() || "@mkbhd";
@@ -518,7 +518,7 @@ bot.command("audit", async (ctx) => {
       `💡 **Actionable Growth Advice:**\n` +
       `• ${data.aiRecommendations[0] || 'Maintain high thumbnail subject contrast.'}\n` +
       `• ${data.aiRecommendations[1] || 'Pin discussion comments within 15 minutes of upload.'}\n\n` +
-      `👉 [Full Interactive VidIQ Audit in Dashboard](${dashboardUrl})`,
+      `👉 [Full Interactive Audit in Dashboard](${dashboardUrl})`,
       { parse_mode: "Markdown" }
     );
   } catch (err: any) {
@@ -738,7 +738,7 @@ bot.on("message:text", async (ctx) => {
     return ctx.reply(
       `❓ **TubePilot AI — FAQ:**\n\n` +
       `1️⃣ **TubePilot AI nima?**\n` +
-      `Bu YouTube ijodkorlari uchun VidIQ muqobili bo'lgan avtonom AI kopilotidir.\n\n` +
+      `Bu YouTube ijodkorlari uchun avtonom AI kopilotidir.\n\n` +
       `2️⃣ **CTR Vision qanday ishlaydi?**\n` +
       `Istalgan muqova rasmini yuborsangiz, AI uning kontrast va o'qilishini tekshiradi.\n\n` +
       `3️⃣ **Boshqaruv paneli:**\n` +
@@ -893,7 +893,7 @@ if (process.env.RUN_BOT_POLLING === "true" || (!process.env.NEXT_RUNTIME && !pro
 
   bot.api.setMyCommands([
     { command: "start", description: "🚀 Asosiy menyu va barcha imkoniyatlar" },
-    { command: "audit", description: "🔍 Istalgan kanalni VidIQ uslubida audit qilish" },
+    { command: "audit", description: "🔍 Istalgan kanalni professional audit qilish" },
     { command: "channel", description: "📺 Ulangan kanal va real statistika" },
     { command: "help", description: "💡 YouTube AI maslahatchi va yo'riqnoma" },
     { command: "lang", description: "🌐 Muloqot tilini o'zgartirish (UZ/RU/EN)" },
